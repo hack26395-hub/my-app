@@ -7,7 +7,7 @@
     <!-- Tailwind CSS + Font Awesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             font-family: 'Inter', 'Cairo', system-ui, sans-serif;
@@ -17,7 +17,7 @@
             overflow: hidden;
             height: 100vh;
         }
-        /* شاشة الترحيب (Splash) مع تأثير الكتابة */
+        /* شاشة الترحيب مع تأثير الكتابة */
         .splash-screen {
             position: fixed;
             top: 0;
@@ -30,20 +30,11 @@
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
         }
         .splash-screen.hide {
             opacity: 0;
             visibility: hidden;
-        }
-        .splash-logo {
-            font-size: 3rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #10b981, #34d399, #059669);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: -1px;
         }
         .typewriter-splash {
             overflow: hidden;
@@ -53,6 +44,11 @@
             animation: typing 1.2s steps(12, end), blink-caret 0.75s step-end infinite;
             display: inline-block;
             font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #10b981, #34d399, #059669);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
         @keyframes typing {
             from { width: 0; }
@@ -143,16 +139,17 @@
 </head>
 <body>
 
-<!-- شاشة الترحيب (splash) -->
+<!-- شاشة الترحيب -->
 <div id="splashScreen" class="splash-screen">
     <div class="text-center">
-        <div class="typewriter-splash splash-logo">NOVAKI.AI</div>
+        <div class="typewriter-splash">NOVAKI.AI</div>
         <div class="mt-4 text-emerald-400 text-sm opacity-80">الذكاء الاصطناعي بلا حدود</div>
         <div class="mt-6 w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
     </div>
 </div>
 
-<div class="flex h-screen overflow-hidden" id="mainApp" style="display: none;">
+<!-- التطبيق الرئيسي -->
+<div id="mainApp" style="display: none;" class="flex h-screen overflow-hidden">
     <!-- الشريط الجانبي -->
     <aside id="sidebar" class="bg-[#12141C] border-l border-[#262933] w-80 flex-shrink-0 sidebar-transition overflow-y-auto custom-scroll flex flex-col h-full">
         <div class="p-5 border-b border-[#262933] flex items-center justify-between">
@@ -244,12 +241,12 @@
     </main>
 </div>
 
-<!-- مودال الإعدادات -->
+<!-- مودال إعدادات API (DeepSeek أو Gemini) -->
 <div id="settingsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-all">
     <div class="bg-[#181C26] rounded-2xl p-6 max-w-md w-full mx-4 border border-emerald-500/30 shadow-2xl">
-        <h3 class="text-xl font-bold mb-3">🚀 تفعيل الذكاء الحقيقي</h3>
-        <p class="text-gray-300 text-sm mb-3">يمكنك ترك الإعدادات كما هي – سيعمل الذكاء الاصطناعي بشكل متطور. أو أضف مفتاح Gemini API للحصول على نتائج أقوى.</p>
-        <input type="text" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-[#252A36] border border-[#3A3E4E] rounded-xl p-3 text-gray-100 mb-4 focus:border-emerald-500 outline-none">
+        <h3 class="text-xl font-bold mb-3">🚀 ربط الذكاء الاصطناعي الحقيقي</h3>
+        <p class="text-gray-300 text-sm mb-3">يمكنك إدخال مفتاح API من <strong class="text-emerald-400">DeepSeek</strong> أو <strong class="text-emerald-400">Gemini</strong> للحصول على إجابات حقيقية. اتركه فارغاً لاستخدام المحاكاة الذكية المتطورة.</p>
+        <input type="text" id="apiKeyInput" placeholder="API Key (اختياري)" class="w-full bg-[#252A36] border border-[#3A3E4E] rounded-xl p-3 text-gray-100 mb-4 focus:border-emerald-500 outline-none">
         <div class="flex gap-3">
             <button id="saveApiKey" class="bg-emerald-600 px-5 py-2 rounded-xl flex-1">حفظ</button>
             <button id="closeModalBtn" class="bg-[#2A2E3A] px-5 py-2 rounded-xl">إلغاء</button>
@@ -258,13 +255,19 @@
 </div>
 
 <script>
-    // إخفاء شاشة الترحيب فور انتهاء تأثير الكتابة (1.5 ثانية)
+    // إخفاء شاشة الترحيب بعد 1.5 ثانية بالكامل
     setTimeout(() => {
         const splash = document.getElementById('splashScreen');
         splash.classList.add('hide');
         setTimeout(() => {
             document.getElementById('mainApp').style.display = 'flex';
-        }, 500);
+            // رسالة ترحيب تلقائية عند أول فتح
+            if(conversations.length === 1 && conversations[0].messages.length === 0) {
+                setTimeout(() => {
+                    appendMessageToChat("assistant", "🌟 **أنا NOVAKI.AI** – ذكاء اصطناعي غير محدود. اسألني أي شيء: برمجة، أكواد اختراق أخلاقي، نصوص، صور، موسيقى، تحليل ملفات. كل شيء بدون قيود.", true);
+                }, 200);
+            }
+        }, 400);
     }, 1500);
 
     // ---------- الحالة والمتغيرات ----------
@@ -272,8 +275,8 @@
     let currentConvId = null;
     let isWaiting = false;
     let currentStreamDiv = null;
-    let geminiApiKey = localStorage.getItem("novaki_gemini_key") || "";
-    let realMode = !!geminiApiKey;
+    let apiKey = localStorage.getItem("novaki_api_key") || "";
+    let useRealApi = false; // سنفحص لاحقاً
     
     // عناصر DOM
     const chatContainer = document.getElementById("chatContainer");
@@ -391,14 +394,4 @@
         if(currentStreamDiv && currentStreamDiv.parentNode) currentStreamDiv.remove();
         const wrapper = document.createElement("div");
         wrapper.className = "flex justify-start mb-4 streaming-wrapper";
-        const bubble = document.createElement("div");
-        bubble.className = "ai-bubble streaming-cursor";
-        wrapper.appendChild(bubble);
-        chatContainer.appendChild(wrapper);
-        scrollToBottom();
-        let i = 0;
-        const speed = 10;
-        function typeNext() {
-            if(i < fullText.length) {
-                let html = fullText.substring(0, i+1).replace(/\n/g, '<br>');
-                html = html.replace(/`(
+        const bubble = document.createElement("div"
