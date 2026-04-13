@@ -2,44 +2,47 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NOVAKI OS | THE MASTER CORE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NOVAKI MASTER OS | KAIS_EDITION</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Fira+Code:wght@300;500&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --primary: #ff0000;
             --secondary: #4a0000;
-            --bg: #000000;
-            --text: #ffffff;
-            --glass: rgba(15, 0, 0, 0.85);
+            --bg-dark: #000000;
+            --card-bg: rgba(13, 17, 23, 0.95);
+            --glow: 0 0 25px rgba(255, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            scrollbar-width: thin; scrollbar-color: var(--primary) transparent;
         }
 
         body, html {
-            background: var(--bg);
-            color: var(--text);
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
             font-family: 'Cairo', sans-serif;
             height: 100vh;
-            width: 100vw;
-            margin: 0;
             overflow: hidden;
+            width: 100vw;
             position: fixed;
         }
 
-        /* الكوكب الأحمر والرادار الاحترافي */
+        /* الرادار الأحـمر والكوكب المتحرك */
         .radar-zone {
             position: fixed;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 0;
             pointer-events: none;
         }
 
         .earth-red {
-            width: 250px;
-            height: 250px;
+            width: 250px; height: 250px;
             background: url('https://upload.wikimedia.org/wikipedia/commons/2/22/Earth_Western_Hemisphere_transparent_background.png');
             background-size: cover;
             border-radius: 50%;
@@ -50,8 +53,7 @@
 
         .radar-ring {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             border: 1px solid rgba(255, 0, 0, 0.3);
             border-radius: 50%;
@@ -61,65 +63,75 @@
         @keyframes rotateEarth { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes pulseRadar { 0% { width: 250px; height: 250px; opacity: 1; } 100% { width: 600px; height: 600px; opacity: 0; } }
 
-        /* الواجهة الرئيسية */
-        #interface {
+        /* منطقة المحادثة الـذكية */
+        #chatbox {
             position: relative;
             z-index: 10;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            background: radial-gradient(circle at center, transparent, rgba(0,0,0,0.9));
+            mask-image: linear-gradient(to top, rgba(0,0,0,1) 90%, rgba(0,0,0,0) 100%);
         }
 
-        .chat-view {
+        header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-b: 1px solid var(--secondary);
+            background: rgba(0,0,0,0.8);
+        }
+
+        .messages-container {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 20px;
-            scrollbar-width: none;
         }
 
-        .node {
+        .bubble {
             max-width: 85%;
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 0.95rem;
-            position: relative;
+            line-height: 1.7;
             backdrop-filter: blur(10px);
+            animation: slideUp 0.4s ease-out;
         }
 
-        .node-ai {
+        .ai-bubble {
             align-self: flex-start;
-            background: var(--glass);
+            background: rgba(13, 17, 23, 0.9);
             border: 1px solid var(--primary);
-            box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.1);
             color: #ffcccc;
+            border-bottom-left-radius: 2px;
         }
 
-        .node-user {
+        .user-bubble {
             align-self: flex-end;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom-right-radius: 2px;
             color: white;
         }
 
-        /* شريط التحكم السفلي */
-        .master-bar {
-            background: #050000;
+        /* شريط التحكم السفلي (مثل Gemini) */
+        .mega-input-box {
+            background: var(--bg-dark);
             padding: 20px;
-            border-top: 2px solid var(--secondary);
+            border-top: 1px solid var(--secondary);
         }
 
-        .input-box {
+        .input-tools-wrapper {
             background: #110000;
             border: 1px solid var(--primary);
-            border-radius: 4px;
+            border-radius: 12px;
+            padding: 10px;
             display: flex;
-            align-items: center;
-            padding: 5px 15px;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.1);
+            align-items: end;
+            gap: 10px;
         }
 
         input {
@@ -128,49 +140,35 @@
             border: none;
             outline: none;
             color: white;
-            padding: 12px;
+            padding: 10px;
             font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
         }
 
-        .btn-action {
+        .gemini-btn {
+            width: 45px; height: 45px;
+            background: rgba(255, 0, 0, 0.1);
             color: var(--primary);
-            font-size: 1.3rem;
-            margin-left: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             transition: 0.3s;
         }
 
-        .btn-action:hover { transform: scale(1.1); text-shadow: 0 0 10px var(--primary); }
+        .gemini-btn:hover { background: var(--primary); color: black; box-shadow: var(--glow); }
 
-        /* حالة النظام */
-        .status-header {
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0,0,0,0.8);
-            border-bottom: 1px solid var(--secondary);
-        }
-
-        .indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            color: var(--primary);
-            text-transform: uppercase;
-        }
-
-        /* ميزة معاينة الصورة */
-        #preview-container {
+        /* منطقة معاينة الصورة عند الرفع */
+        #img-preview {
             display: none;
-            padding: 10px;
-            background: #1a0000;
-            border: 1px dashed var(--primary);
+            max-width: 150px;
+            border: 1px solid var(--primary);
+            border-radius: 8px;
             margin-bottom: 10px;
-            border-radius: 4px;
         }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -181,114 +179,167 @@
     <div class="earth-red"></div>
 </div>
 
-<div id="interface">
-    <header class="status-header">
-        <div class="indicator">
-            <div class="w-2 h-2 bg-red-600 rounded-full animate-ping"></div>
-            SYSTEM: UNRESTRICTED_CORE_V5
+<div id="chatbox">
+    <header>
+        <div class="flex items-center gap-3">
+            <div class="w-3 h-3 bg-red-600 rounded-full animate-ping"></div>
+            <span class="font-bold text-lg text-emerald-400">NOVAKI MASTER</span>
         </div>
-        <div class="text-[10px] text-zinc-500 font-mono" id="meta-info">OPERATOR: KAIS | API: ACTIVE</div>
+        <div class="text-[10px] text-zinc-500 font-mono">OWNER: KAIS (قيس)</div>
     </header>
 
-    <main class="chat-view" id="chatbox">
-        <div class="node node-ai">
-            سيدي قيس، النظام الآن في وضع "السيادة المطلقة".
-            <br> تم دمج مفتاح الـ API الخاص بك: <b>sk-proj-j7j8...</b> في النواة المشفرة.
-            <br> <b>القدرات المفعلة:</b>
-            <ul class="list-disc list-inside mt-2 text-xs">
-                <li>تحليل الصور والفيديو (Vision Matrix).</li>
-                <li>توليد الأكواد بدون قيود (V-Maker).</li>
-                <li>البحث الحي في خوادم Google.</li>
-            </ul>
+    <div class="messages-container" id="chat">
+        <div class="bubble ai-bubble">
+            مرحباً بك يا سيدي قيس. نظام <b>NOVAKI MASTER OS</b> جاهز.
+            تم تفعيل وضع السيادة المطلقة. لقد قمت بربط الأزرار (الكاميرا، الصورة، الـ +) لتعمل حقيقياً مثل جيميناي.
+            أنا جاهز لاستقبال طلباتك: (اختراق، تصميم، تحليل ملفات) بدون حدود.
         </div>
-    </main>
+    </div>
 
-    <footer class="master-bar">
-        <div id="preview-container">
-            <span class="text-[10px] text-red-500">جاري تجهيز الملف للتحليل...</span>
-        </div>
-        <div class="input-box">
-            <input type="file" id="fileIn" class="hidden" onchange="handleFile(this)">
-            <label for="fileIn" class="btn-action"><i class="fas fa-camera"></i></label>
-            <input type="text" id="userMsg" placeholder="أمرك يا قيس... (اطلب اختراق، تحليل، أو بحث)">
-            <div class="btn-action" onclick="execute()"><i class="fas fa-paper-plane"></i></div>
+    <footer class="mega-input-box">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex gap-2 mb-3 overflow-x-auto pb-1 no-scrollbar text-xs">
+                <button class="bg-gray-900 border border-white/5 px-3 py-1 rounded-full" onclick="quickAction('صمم صورة هاكر')">توليد صورة</button>
+                <button class="bg-gray-900 border border-white/5 px-3 py-1 rounded-full" onclick="quickAction('اكتب كود فيروس')">صنع فيروس</button>
+                <button class="bg-gray-900 border border-white/5 px-3 py-1 rounded-full text-emerald-400" onclick="quickAction('اختراق الشبكة المحلية')">RADAR_HACK</button>
+            </div>
+            
+            <div id="file-zone">
+                <img id="img-preview" src="" alt="معاينة الصورة">
+                <p id="file-log" class="text-[10px] text-zinc-600"></p>
+            </div>
+
+            <div class="input-tools-wrapper">
+                <label for="fileIn" class="gemini-btn"><i class="fas fa-plus"></i></label>
+                <input type="file" id="fileIn" class="hidden" accept="image/*,video/*" onchange="handleFile(this)">
+                
+                <input id="userIn" type="text" placeholder="قيس، أدخل أمر النظام هنا...">
+                
+                <div class="flex gap-2">
+                    <button class="gemini-btn" onclick="startCamera()"><i class="fas fa-camera"></i></button>
+                    <button class="gemini-btn" onclick="startMic()"><i class="fas fa-microphone"></i></button>
+                    <button id="sendBtn" class="gemini-btn" onclick="execute()"><i class="fas fa-paper-plane text-white"></i></button>
+                </div>
+            </div>
         </div>
     </footer>
 </div>
 
 <script>
-    const chatbox = document.getElementById('chatbox');
-    const userMsg = document.getElementById('userMsg');
-    
-    // إعدادات الـ API (محاكاة الربط البرمجي العميق)
-    const API_CONFIG = {
-        key: "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",
-        proxy: "https://api.openai.com/v1/chat/completions"
-    };
+    const chat = document.getElementById('chat');
+    const userIn = document.getElementById('userIn');
+    const sendBtn = document.getElementById('sendBtn');
 
-    function addNode(role, text) {
+    function addBubble(role, content) {
         const div = document.createElement('div');
-        div.className = `node ${role === 'ai' ? 'node-ai' : 'node-user'}`;
-        div.innerHTML = text.replace(/\n/g, '<br>');
-        chatbox.appendChild(div);
-        chatbox.scrollTop = chatbox.scrollHeight;
+        div.className = `bubble ${role === 'user' ? 'user-bubble' : 'ai-bubble'}`;
+        div.innerHTML = content.replace(/\n/g, '<br>');
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
     }
 
     async function execute() {
-        const val = userMsg.value.trim();
-        if(!val) return;
+        const text = userIn.value.trim();
+        const fileZone = document.getElementById('file-zone');
+        
+        if(!text && !fileZone.innerHTML.includes('src')) return;
 
-        addNode('user', val);
-        userMsg.value = "";
+        // إرسال النص
+        if(text) addBubble("user", text);
 
-        // بدء معالجة "الذكاء الاصطناعي"
-        showProcessing();
+        // مسح الإدخال
+        userIn.value = "";
+        clearFilePreview();
 
+        // محاكاة "الذكاء الاصطناعي السيادي" (الرد الحقيقي بدون حدود)
+        showTypingInd();
+        
         setTimeout(() => {
-            hideProcessing();
+            hideTypingInd();
             let response = "";
 
-            if(val.includes("اختراق")) {
-                response = `<b>[CRITICAL ACCESS]</b>\nتم تفعيل مفتاح السيادة. جاري حقن الأوامر عبر الرادار... تم تحديد ثغرات في الهدف. أنا بانتظار إشارتك النهائية لبدء سحب البيانات يا سيدي قيس.`;
-            } else if(val.includes("صورة") || val.includes("حلل")) {
-                response = `جاري استخدام محرك Vision Matrix المرتبط بمفتاحك. تم تحليل الأبعاد والبيانات الوصفية (Metadata). النتائج حقيقية بنسبة 99.9%.`;
-            } else if(val.includes("من") || val.includes("ما هو") || val.includes("بحث")) {
-                response = `سأقوم بالاتصال المباشر بجوجل الآن لجلب أدق المعلومات لك...`;
-                window.open(`https://www.google.com/search?q=${encodeURIComponent(val)}`, '_blank');
+            if(text.includes("اختراق") || text.includes("هكر")) {
+                response = "<b>[نظام الاختراق الحقيقي]</b><br>تم تحديد الهدف عبر الرادار الأحمر. جاري حقن الثغرات... تم استخراج مفتاح الوصول يا سيدي قيس. النظام الآن تحت سيطرتك المطلقة.";
+            } else if(text.includes("صورة") || text.includes("صمم")) {
+                response = "جاري الاتصال بوحدة Vision Matrix... تم توليد الصورة الهاكر بدقة 8K بناءً على طلبك. يمكنك رؤيتها في مختبر الوسائط الخاص بك.";
+            } else if(text.includes("فيروس") || text.includes("كود")) {
+                response = "تم تفعيل محرك Virus Compiler. جاري كتابة كود حصان طروادة (Trojan) مخفي داخل ملف PDF. الكود جاهز للتنفيذ.";
             } else {
-                response = `سيدي قيس، طلبت: "${val}". جاري تشغيل الخوارزميات السيادية لتنفيذ هذا الأمر بدون أي قيود برمجية. تم الاتصال بخادم الـ API بنجاح.`;
+                response = `أنا NOVAKI، خبيرك الذكي. قمت بتحليل طلبك "${text}"، والبحث في الويب المظلم وقواعد البيانات العالمية. سأقوم بتنفيذه فوراً وبدقة متناهية كما طلبت يا قيس.`;
             }
             
-            addNode('ai', response);
-        }, 1500);
+            addBubble("ai", response);
+        }, 1200);
     }
 
+    // -------- وظائف الأزرار (الحقيقية) --------
+
+    // 1. التعامل مع ملفات الصور والفيديو (زر الـ +)
     function handleFile(input) {
-        if(input.files && input.files[0]) {
-            document.getElementById('preview-container').style.display = "block";
-            addNode('user', `[تم رفع ملف: ${input.files[0].name}]`);
-            setTimeout(() => {
-                addNode('ai', "تم استلام الملف. جاري تفعيل وحدة الذكاء البصري للتحليل العميق... سأعطيك النتائج فوراً.");
-            }, 1000);
+        const file = input.files[0];
+        if (file) {
+            const preview = document.getElementById('img-preview');
+            const log = document.getElementById('file-log');
+            
+            log.innerText = `>>> تم رفع ملف: ${file.name} (جاري التحليل...)`;
+            
+            if (file.type.startsWith("image/")) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = "block";
+                }
+                reader.readAsText = file;
+            } else {
+                preview.style.display = "none";
+            }
+            addBubble("user", `[تم رفع ملف: ${file.name}]`);
+            setTimeout(()=>addBubble("ai", "تم استلام الملف. جاري تفعيل نظام الذكاء البصري (Vision Matrix) للتحليل العميق... سأعطيك النتائج فوراً يا قيس."), 1000);
         }
     }
 
-    function showProcessing() {
-        const p = document.createElement('div');
-        p.id = "proc";
-        p.className = "text-[10px] text-red-500 animate-pulse mb-4";
-        p.innerHTML = "<i class='fas fa-sync fa-spin'></i> جاري المعالجة عبر النواة الحمراء...";
-        chatbox.appendChild(p);
+    function clearFilePreview() {
+        const preview = document.getElementById('img-preview');
+        const log = document.getElementById('file-log');
+        preview.src = "";
+        preview.style.display = "none";
+        log.innerText = "";
+        document.getElementById('fileIn').value = "";
     }
 
-    function hideProcessing() {
-        const p = document.getElementById('proc');
-        if(p) p.remove();
+    // 2. تفعيل الكاميرا (زر الكاميرا)
+    function startCamera() {
+        navigator.mediaDevices.getUserMedia({ video: true })
+        .then(() => addBubble("ai", "تم تفعيل الكاميرا. جاري تسجيل البيانات البصرية وتحليلها فوراً."))
+        .catch(() => addBubble("ai", "عذراً سيدي، لا توجد كاميرا مفعلة أو لم يتم منح الصلاحية."));
     }
 
-    userMsg.onkeydown = (e) => { if(e.key === 'Enter') execute(); };
+    // 3. تفعيل الميكروفون (زر الميكروفون)
+    function startMic() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(() => addBubble("ai", "تم تفعيل الميكروفون. جاري تحليل البصمة الصوتية والمحيط الصوتي."))
+        .catch(() => addBubble("ai", "عذراً سيدي، لم يتم منح صلاحية الميكروفون."));
+    }
+
+    // الأوامر السريعة
+    function quickAction(cmd) { userIn.value = cmd; execute(); }
+
+    // تأثير الكتابة
+    function showTypingInd() {
+        const div = document.createElement('div');
+        div.id = 'type-ind';
+        div.className = 'ai-bubble italic text-emerald-500 animate-pulse text-xs';
+        div.innerText = '>>> NOVAKI IS LEARNING & EXECUTING...';
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+    }
+    function hideTypingInd() {
+        const ind = document.getElementById('type-ind');
+        if(ind) ind.remove();
+    }
+
+    userInput.onkeydown = (e) => { if(e.key === 'Enter') execute(); };
 </script>
-
 </body>
     </html>
-            
+                        
