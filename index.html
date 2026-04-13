@@ -17,7 +17,7 @@
             overflow: hidden;
             height: 100vh;
         }
-        /* شاشة الترحيب مع تأثير الكتابة */
+        /* شاشة الترحيب (Splash) مع تأثير الكتابة */
         .splash-screen {
             position: fixed;
             top: 0;
@@ -30,7 +30,7 @@
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
         .splash-screen.hide {
             opacity: 0;
@@ -50,7 +50,7 @@
             border-left: 3px solid #10b981;
             white-space: nowrap;
             margin: 0 auto;
-            animation: typing 1.5s steps(12, end), blink-caret 0.75s step-end infinite;
+            animation: typing 1.2s steps(12, end), blink-caret 0.75s step-end infinite;
             display: inline-block;
             font-size: 3rem;
         }
@@ -221,7 +221,7 @@
             </div>
         </div>
 
-        <!-- شريط الإدخال -->
+        <!-- شريط الإدخال العائم -->
         <div class="sticky bottom-0 p-4 bg-gradient-to-t from-[#0B0E14] via-[#0B0E14] to-transparent">
             <div class="max-w-3xl mx-auto">
                 <div class="bg-[#1A1D27] rounded-2xl border border-[#2E313E] shadow-2xl backdrop-blur-sm">
@@ -258,14 +258,14 @@
 </div>
 
 <script>
-    // إخفاء شاشة الترحيب بعد 2.5 ثانية (وقت كتابة الاسم)
+    // إخفاء شاشة الترحيب فور انتهاء تأثير الكتابة (1.5 ثانية)
     setTimeout(() => {
         const splash = document.getElementById('splashScreen');
         splash.classList.add('hide');
         setTimeout(() => {
             document.getElementById('mainApp').style.display = 'flex';
-        }, 800);
-    }, 2500);
+        }, 500);
+    }, 1500);
 
     // ---------- الحالة والمتغيرات ----------
     let conversations = [];      
@@ -401,4 +401,4 @@
         function typeNext() {
             if(i < fullText.length) {
                 let html = fullText.substring(0, i+1).replace(/\n/g, '<br>');
-                html = html.replace(/`(.*?)`/g, '<code class
+                html = html.replace(/`(
