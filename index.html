@@ -4,22 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <title>NOVAKI.AI | الذكاء الاصطناعي المطلق</title>
-    <!-- Tailwind CSS + Fonts -->
+    <!-- Tailwind CSS + Font Awesome -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome 6 (أيقونات احترافية) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Fonts: Inter + Cairo للدعم العربي -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
-            font-family: 'Inter', 'Cairo', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', 'Cairo', system-ui, sans-serif;
         }
         body {
-            background: #0F1114;
+            background: #0B0E14;
             overflow: hidden;
             height: 100vh;
         }
-        /* تخصيص شريط التمرير */
+        /* شاشة الترحيب مع تأثير الكتابة */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0B0E14;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        .splash-screen.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .splash-logo {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #10b981, #34d399, #059669);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -1px;
+        }
+        .typewriter-splash {
+            overflow: hidden;
+            border-left: 3px solid #10b981;
+            white-space: nowrap;
+            margin: 0 auto;
+            animation: typing 1.5s steps(12, end), blink-caret 0.75s step-end infinite;
+            display: inline-block;
+            font-size: 3rem;
+        }
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #10b981; }
+        }
         .custom-scroll::-webkit-scrollbar {
             width: 5px;
         }
@@ -31,34 +73,6 @@
             background: #3A3C4A;
             border-radius: 10px;
         }
-        /* تأثير shimmer للرد */
-        .shimmer-effect {
-            background: linear-gradient(110deg, #2A2D3A 8%, #3A3E4E 18%, #2A2D3A 33%);
-            background-size: 200% 100%;
-            animation: shimmer 1.4s linear infinite;
-            border-radius: 24px;
-        }
-        @keyframes shimmer {
-            to { background-position-x: -200%; }
-        }
-        /* تأثير الكتابة الحرفي لاسم التطبيق */
-        .typewriter-title {
-            overflow: hidden;
-            border-left: 2px solid #10b981;
-            white-space: nowrap;
-            margin: 0 auto;
-            animation: typing 1.4s steps(12, end), blink-caret 0.75s step-end infinite;
-            display: inline-block;
-        }
-        @keyframes typing {
-            from { width: 0; }
-            to { width: 100%; }
-        }
-        @keyframes blink-caret {
-            from, to { border-color: transparent; }
-            50% { border-color: #10b981; }
-        }
-        /* فقاعات الدردشة */
         .user-bubble {
             background: #1E1F2E;
             border-radius: 26px 18px 18px 26px;
@@ -91,7 +105,6 @@
             0%, 60%, 100% { transform: translateY(0); }
             30% { transform: translateY(-5px); }
         }
-        /* مؤشر التيبينغ أثناء التفكير */
         .streaming-cursor::after {
             content: "▊";
             animation: blinkStep 1s step-end infinite;
@@ -102,11 +115,6 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
-        /* الانتقالات للشريط الجانبي */
-        .sidebar-transition {
-            transition: width 0.25s ease, opacity 0.2s ease;
-        }
-        /* تحسين الصور والازرار */
         .action-card {
             transition: all 0.2s ease;
             cursor: pointer;
@@ -116,16 +124,37 @@
             transform: translateY(-2px);
             border-color: #10b98160;
         }
+        .sidebar-transition {
+            transition: width 0.25s ease, opacity 0.2s ease;
+        }
         textarea {
             scrollbar-width: thin;
         }
+        .shimmer-effect {
+            background: linear-gradient(110deg, #2A2D3A 8%, #3A3E4E 18%, #2A2D3A 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s linear infinite;
+            border-radius: 24px;
+        }
+        @keyframes shimmer {
+            to { background-position-x: -200%; }
+        }
     </style>
 </head>
-<body class="bg-[#0F1114] text-gray-200">
+<body>
 
-<div class="flex h-screen overflow-hidden">
-    <!-- الشريط الجانبي الأيمن (Sidebar) -->
-    <aside id="sidebar" class="bg-[#15171E] border-l border-[#262933] w-80 flex-shrink-0 sidebar-transition overflow-y-auto custom-scroll flex flex-col h-full">
+<!-- شاشة الترحيب (splash) -->
+<div id="splashScreen" class="splash-screen">
+    <div class="text-center">
+        <div class="typewriter-splash splash-logo">NOVAKI.AI</div>
+        <div class="mt-4 text-emerald-400 text-sm opacity-80">الذكاء الاصطناعي بلا حدود</div>
+        <div class="mt-6 w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+    </div>
+</div>
+
+<div class="flex h-screen overflow-hidden" id="mainApp" style="display: none;">
+    <!-- الشريط الجانبي -->
+    <aside id="sidebar" class="bg-[#12141C] border-l border-[#262933] w-80 flex-shrink-0 sidebar-transition overflow-y-auto custom-scroll flex flex-col h-full">
         <div class="p-5 border-b border-[#262933] flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <i class="fas fa-brain text-emerald-400 text-2xl"></i>
@@ -152,13 +181,10 @@
 
     <!-- المنطقة الرئيسية -->
     <main class="flex-1 flex flex-col h-full relative overflow-hidden">
-        <!-- الهيدر العلوي -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-[#20232C] bg-[#0F1114]/80 backdrop-blur-sm sticky top-0 z-10">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-[#20232C] bg-[#0B0E14]/80 backdrop-blur-sm sticky top-0 z-10">
             <div class="flex items-center gap-3">
                 <button id="toggleSidebarMobile" class="lg:hidden text-gray-300 text-xl"><i class="fas fa-bars"></i></button>
-                <div class="typewriter-title">
-                    <h1 class="text-xl font-semibold bg-gradient-to-l from-emerald-300 to-emerald-500 bg-clip-text text-transparent">NOVAKI.AI</h1>
-                </div>
+                <h1 class="text-xl font-semibold bg-gradient-to-l from-emerald-300 to-emerald-500 bg-clip-text text-transparent">NOVAKI.AI</h1>
             </div>
             <div class="flex items-center gap-3">
                 <i class="fas fa-sliders-h text-gray-300 hover:text-emerald-400 transition cursor-pointer" id="settingsIcon"></i>
@@ -166,17 +192,16 @@
             </div>
         </div>
 
-        <!-- منطقة الدردشة المركزية -->
+        <!-- منطقة الدردشة -->
         <div id="chatContainer" class="flex-1 overflow-y-auto custom-scroll px-4 md:px-8 py-6 space-y-4" style="scroll-behavior: smooth;">
             <div id="emptyState" class="flex flex-col items-center justify-center min-h-[70%] text-center">
                 <div class="w-24 h-24 rounded-full bg-[#1A1D27] flex items-center justify-center mb-5 shadow-inner">
                     <i class="fas fa-robot text-emerald-400 text-5xl"></i>
                 </div>
-                <div class="text-3xl font-bold mb-2 animate-fade-in-up">مرحباً قيس</div>
+                <div class="text-3xl font-bold mb-2">مرحباً قيس</div>
                 <p class="text-gray-400 max-w-md text-base">من أين نبدأ اليوم؟</p>
-                <!-- شبكة الإجراءات السريعة (4 كبسولات) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 w-full max-w-2xl">
-                    <div class="action-card bg-[#1A1D27] border border-[#2A2D3A] rounded-2xl p-4 flex items-center gap-3 transition" data-action="إنشاء صورة احترافية بالذكاء الاصطناعي، أعطني أفضل الأدوات وأكواد واجهة المستخدم">
+                    <div class="action-card bg-[#1A1D27] border border-[#2A2D3A] rounded-2xl p-4 flex items-center gap-3 transition" data-action="أريد إنشاء صورة بالذكاء الاصطناعي، أعطني أفضل الأدوات وأكواد واجهة المستخدم">
                         <i class="fas fa-image text-emerald-400 text-xl"></i>
                         <span class="font-medium">إنشاء صورة</span>
                     </div>
@@ -196,17 +221,17 @@
             </div>
         </div>
 
-        <!-- شريط الإدخال العائم -->
-        <div class="sticky bottom-0 p-4 bg-gradient-to-t from-[#0F1114] via-[#0F1114] to-transparent">
+        <!-- شريط الإدخال -->
+        <div class="sticky bottom-0 p-4 bg-gradient-to-t from-[#0B0E14] via-[#0B0E14] to-transparent">
             <div class="max-w-3xl mx-auto">
                 <div class="bg-[#1A1D27] rounded-2xl border border-[#2E313E] shadow-2xl backdrop-blur-sm">
                     <div class="flex items-end gap-2 p-2">
                         <div class="flex gap-1 px-2">
-                            <label class="file-input-label cursor-pointer text-gray-400 hover:text-emerald-400 transition text-xl"><i class="fas fa-paperclip"></i><input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.pdf,.jpg,.png,.docx"></label>
+                            <label class="cursor-pointer text-gray-400 hover:text-emerald-400 transition text-xl"><i class="fas fa-paperclip"></i><input type="file" id="fileUpload" class="hidden" accept=".txt,.md,.pdf,.jpg,.png"></label>
                             <button id="imageQuickBtn" class="text-gray-400 hover:text-emerald-400 transition text-xl"><i class="fas fa-image"></i></button>
                             <button id="musicQuickBtn" class="text-gray-400 hover:text-emerald-400 transition text-xl"><i class="fas fa-music"></i></button>
                         </div>
-                        <textarea id="promptInput" rows="1" placeholder="اسأل NOVAKI.AI أي شيء... (برمجة، اختراق أخلاقي، نصوص، أفكار)" class="flex-1 bg-transparent border-0 focus:ring-0 text-gray-200 resize-none py-3 px-2 max-h-32 outline-none text-base"></textarea>
+                        <textarea id="promptInput" rows="1" placeholder="اسأل NOVAKI.AI أي شيء... برمجة، أكواد، نصوص، أفكار" class="flex-1 bg-transparent border-0 focus:ring-0 text-gray-200 resize-none py-3 px-2 max-h-32 outline-none text-base"></textarea>
                         <button id="sendMessageBtn" class="bg-emerald-600 hover:bg-emerald-500 transition rounded-full w-10 h-10 flex items-center justify-center text-white shadow-lg"><i class="fas fa-paper-plane"></i></button>
                     </div>
                     <div class="text-[10px] text-gray-500 px-4 pb-2 flex justify-between">
@@ -219,11 +244,11 @@
     </main>
 </div>
 
-<!-- مودال إعدادات بسيط -->
+<!-- مودال الإعدادات -->
 <div id="settingsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-all">
     <div class="bg-[#181C26] rounded-2xl p-6 max-w-md w-full mx-4 border border-emerald-500/30 shadow-2xl">
         <h3 class="text-xl font-bold mb-3">🚀 تفعيل الذكاء الحقيقي</h3>
-        <p class="text-gray-300 text-sm mb-3">يمكنك ترك الإعدادات كما هي – سيعمل الذكاء الاصطناعي بشكل متطور (وضع الخبير). أو أضف مفتاح Gemini API للحصول على نتائج أقوى.</p>
+        <p class="text-gray-300 text-sm mb-3">يمكنك ترك الإعدادات كما هي – سيعمل الذكاء الاصطناعي بشكل متطور. أو أضف مفتاح Gemini API للحصول على نتائج أقوى.</p>
         <input type="text" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-[#252A36] border border-[#3A3E4E] rounded-xl p-3 text-gray-100 mb-4 focus:border-emerald-500 outline-none">
         <div class="flex gap-3">
             <button id="saveApiKey" class="bg-emerald-600 px-5 py-2 rounded-xl flex-1">حفظ</button>
@@ -233,8 +258,17 @@
 </div>
 
 <script>
+    // إخفاء شاشة الترحيب بعد 2.5 ثانية (وقت كتابة الاسم)
+    setTimeout(() => {
+        const splash = document.getElementById('splashScreen');
+        splash.classList.add('hide');
+        setTimeout(() => {
+            document.getElementById('mainApp').style.display = 'flex';
+        }, 800);
+    }, 2500);
+
     // ---------- الحالة والمتغيرات ----------
-    let conversations = [];      // { id, title, messages: [{role, content}] }
+    let conversations = [];      
     let currentConvId = null;
     let isWaiting = false;
     let currentStreamDiv = null;
@@ -261,7 +295,7 @@
     const musicQuickBtn = document.getElementById("musicQuickBtn");
     const statusBadge = document.getElementById("statusBadge");
     
-    // تحميل المحادثات من التخزين المحلي
+    // تحميل المحادثات
     function loadConversations() {
         const stored = localStorage.getItem("novaki_conversations");
         if(stored) {
@@ -279,7 +313,7 @@
     }
     function createNewChat() {
         const newId = Date.now().toString();
-        const newChat = { id: newId, title: `محادثة ${new Date().toLocaleTimeString()}`, messages: [] };
+        const newChat = { id: newId, title: `محادثة جديدة`, messages: [] };
         conversations.unshift(newChat);
         currentConvId = newId;
         renderConversationList();
@@ -321,7 +355,10 @@
         const bubble = document.createElement("div");
         bubble.className = role === 'user' ? 'user-bubble' : 'ai-bubble';
         if(role === 'user') bubble.innerText = content;
-        else bubble.innerHTML = marked ? marked.parse(content) : content.replace(/\n/g, '<br>').replace(/`(.*?)`/g, '<code class="bg-black/40 px-1 rounded">$1</code>');
+        else {
+            let formatted = content.replace(/\n/g, '<br>').replace(/`(.*?)`/g, '<code class="bg-black/40 px-1 rounded">$1</code>');
+            bubble.innerHTML = formatted;
+        }
         wrapper.appendChild(bubble);
         chatContainer.appendChild(wrapper);
         scrollToBottom();
@@ -329,7 +366,7 @@
             const conv = conversations.find(c => c.id === currentConvId);
             if(conv) {
                 conv.messages.push({ role, content, timestamp: Date.now() });
-                if(role === 'user' && conv.messages.length === 1) conv.title = content.substring(0, 28);
+                if(role === 'user' && conv.messages.length === 1) conv.title = content.substring(0, 28) || "محادثة";
                 renderConversationList();
                 saveConversations();
             }
@@ -350,7 +387,6 @@
         const el = document.getElementById("typingLoader");
         if(el) el.remove();
     }
-    // تأثير التيار المباشر (streaming)
     async function streamAssistantReply(fullText) {
         if(currentStreamDiv && currentStreamDiv.parentNode) currentStreamDiv.remove();
         const wrapper = document.createElement("div");
@@ -365,27 +401,4 @@
         function typeNext() {
             if(i < fullText.length) {
                 let html = fullText.substring(0, i+1).replace(/\n/g, '<br>');
-                html = html.replace(/`(.*?)`/g, '<code class="bg-black/40 px-1 rounded">$1</code>');
-                bubble.innerHTML = html;
-                i++;
-                scrollToBottom();
-                setTimeout(typeNext, speed);
-            } else {
-                bubble.classList.remove("streaming-cursor");
-                currentStreamDiv = null;
-                // حفظ الرد في التاريخ
-                const conv = conversations.find(c => c.id === currentConvId);
-                if(conv) {
-                    conv.messages.push({ role: "assistant", content: fullText, timestamp: Date.now() });
-                    saveConversations();
-                }
-            }
-        }
-        currentStreamDiv = wrapper;
-        typeNext();
-    }
-    // محاكي الذكاء المتطور (أو استخدام Gemini الحقيقي)
-    async function getNovakiReply(userMsg, fileContent = null) {
-        if(realMode && geminiApiKey) {
-            try {
-         
+                html = html.replace(/`(.*?)`/g, '<code class
